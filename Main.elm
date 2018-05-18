@@ -1,15 +1,17 @@
 module Main exposing (..)
 
-import Html exposing (..)
-import Html.Events exposing (..)
-import Html.Attributes exposing (..)
+import Css exposing (..)
+import Html
+import Html.Styled exposing (..)
+import Html.Styled.Attributes exposing (..)
+import Html.Styled.Events exposing (..)
 
 
 main : Program Never Model Msg
 main =
     Html.program
         { init = init
-        , view = view
+        , view = view >> toUnstyled
         , update = update
         , subscriptions = subscriptions
         }
@@ -55,6 +57,7 @@ type Msg
     = UpdateNewName String
     | UpdateNewInit String
     | AddCombatant
+    | UpdateCombatant Int CombatantMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -94,6 +97,42 @@ update msg model =
             }
                 ! []
 
+        UpdateCombatant index combatantMsg ->
+            let
+                ( updatedCombatants, cmds ) =
+                    updateOneOf (updateCombatant combatantMsg) index model.combatants
+            in
+                { model | combatants = updatedCombatants }
+                    ! [ Cmd.map (UpdateCombatant index) cmds ]
+
+
+updateOneOf : (a -> ( a, Cmd msg )) -> Int -> List a -> ( List a, Cmd msg )
+updateOneOf fn refIdx list =
+    let
+        ( updatedList, cmds ) =
+            List.indexedMap (,) list
+                |> List.map
+                    (\( idx, item ) ->
+                        if refIdx == idx then
+                            fn item
+                        else
+                            ( item, Cmd.none )
+                    )
+                |> List.unzip
+    in
+        updatedList ! cmds
+
+
+type CombatantMsg
+    = ModifyInitiative Int
+
+
+updateCombatant : CombatantMsg -> Combatant -> ( Combatant, Cmd CombatantMsg )
+updateCombatant msg combatant =
+    case msg of
+        ModifyInitiative modifyBy ->
+            { combatant | initiative = combatant.initiative + modifyBy } ! []
+
 
 
 -- Subscriptions
@@ -106,6 +145,36 @@ subscriptions model =
 
 
 -- Styles
+
+
+type alias Colour =
+    Color
+
+
+type alias ColourPallette =
+    { c1 : Colour
+    , c2 : Colour
+    , c3 : Colour
+    , c4 : Colour
+    , c5 : Colour
+    }
+
+
+
+-- https://coolors.co/413c58-a3c4bc-bfd7b5-e7efc5-f2dda4
+
+
+colourPallette : ColourPallette
+colourPallette =
+    { c1 = hex "413c58"
+    , c2 = hex "a3c4bc"
+    , c3 = hex "bfd7b5"
+    , c4 = hex "e7efc5"
+    , c5 = hex "f2dda4"
+    }
+
+
+
 -- Views
 
 
@@ -130,16 +199,69 @@ managePanel { name, initiative } =
 
 tracker : Combatants -> Html Msg
 tracker combatants =
-    div []
-        (List.map
+    div [ css [ trackerStyling ] ]
+        (List.indexedMap
             combatantCard
             combatants
         )
 
 
-combatantCard : Combatant -> Html Msg
-combatantCard { name, initiative } =
-    div []
-        [ b [] [ text name ]
-        , text <| toString initiative
+trackerStyling : Style
+trackerStyling =
+    Css.batch
+        [ padding (px 5)
+        , displayFlex
+        , flexWrap Css.wrap
         ]
+
+
+combatantCard : Int -> Combatant -> Html Msg
+combatantCard index { name, initiative } =
+    let
+        indexModBtn =
+            modifyInitiativeBtn index
+    in
+        div [ css [ combatantCardStyle ] ]
+            [ div
+                [ css [ initiativeFont ] ]
+                [ (toString initiative)
+                    ++ "i"
+                    |> text
+                ]
+            , indexModBtn -5
+            , indexModBtn -1
+            , indexModBtn 1
+            , indexModBtn 5
+            , div [] [ text name ]
+            ]
+
+
+combatantCardStyle : Style
+combatantCardStyle =
+    Css.batch
+        [ padding (px 5)
+        , margin (px 5)
+        , backgroundColor colourPallette.c3
+        , Css.width (px 150)
+        , Css.height (px 150)
+        , overflow Css.hidden
+        , overflowWrap normal
+        ]
+
+
+initiativeFont : Style
+initiativeFont =
+    Css.batch
+        [ fontSize (px 30)
+        , fontWeight bold
+        ]
+
+
+modifyInitiativeBtn : Int -> Int -> Html Msg
+modifyInitiativeBtn index modifyBy =
+    button
+        [ onClick <|
+            UpdateCombatant index <|
+                ModifyInitiative modifyBy
+        ]
+        [ text <| toString modifyBy ]

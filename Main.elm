@@ -251,9 +251,10 @@ managePanel { name, initiative } =
 tracker : Combatants -> Html Msg
 tracker combatants =
     div [ css [ trackerStyling ] ]
-        (List.indexedMap
-            combatantCard
-            combatants
+        (List.sortBy .initiative combatants
+            |> List.reverse
+            |> List.indexedMap
+                combatantCard
         )
 
 

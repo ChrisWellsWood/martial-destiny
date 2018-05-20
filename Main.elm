@@ -25,18 +25,20 @@ init =
 type alias Model =
     { newCombatant : Combatant
     , combatants : Combatants
-    , tick : Int
     , turn : Int
+    , newInitiative : Int
+    , popUp : Maybe PopUp
     }
 
 
 emptyModel : Model
 emptyModel =
     Model
-        (Combatant "" 1)
+        defaultCombatant
         []
         1
         1
+        Nothing
 
 
 type alias Combatant =
@@ -45,8 +47,17 @@ type alias Combatant =
     }
 
 
+defaultCombatant : Combatant
+defaultCombatant =
+    Combatant "" 1
+
+
 type alias Combatants =
     List Combatant
+
+
+type PopUp
+    = EditInitiative Int
 
 
 
@@ -58,6 +69,11 @@ type Msg
     | UpdateNewInit String
     | AddCombatant
     | UpdateCombatant Int CombatantMsg
+    | OpenPopUp PopUp
+    | ClosePopUp
+    | ModifyNewInitiative Int
+    | SetNewInitiative String
+    | ApplyNewInitiative Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -90,7 +106,7 @@ update msg model =
 
         AddCombatant ->
             { model
-                | newCombatant = Combatant "" 0
+                | newCombatant = defaultCombatant
                 , combatants =
                     model.newCombatant
                         :: model.combatants
@@ -104,6 +120,34 @@ update msg model =
             in
                 { model | combatants = updatedCombatants }
                     ! [ Cmd.map (UpdateCombatant index) cmds ]
+
+        OpenPopUp popUp ->
+            { model | popUp = Just popUp } ! []
+
+        ClosePopUp ->
+            { model | popUp = Nothing } ! []
+
+        ModifyNewInitiative initiative ->
+            { model | newInitiative = model.newInitiative + initiative } ! []
+
+        SetNewInitiative initiativeString ->
+            case String.toInt initiativeString of
+                Ok initiative ->
+                    { model | newInitiative = initiative } ! []
+
+                Err _ ->
+                    model ! []
+
+        ApplyNewInitiative index ->
+            let
+                ( updatedModel, cmds ) =
+                    update
+                        (SetInitiative model.newInitiative
+                            |> UpdateCombatant index
+                        )
+                        model
+            in
+                { updatedModel | popUp = Nothing } ! [ cmds ]
 
 
 updateOneOf : (a -> ( a, Cmd msg )) -> Int -> List a -> ( List a, Cmd msg )
@@ -124,14 +168,14 @@ updateOneOf fn refIdx list =
 
 
 type CombatantMsg
-    = ModifyInitiative Int
+    = SetInitiative Int
 
 
 updateCombatant : CombatantMsg -> Combatant -> ( Combatant, Cmd CombatantMsg )
 updateCombatant msg combatant =
     case msg of
-        ModifyInitiative modifyBy ->
-            { combatant | initiative = combatant.initiative + modifyBy } ! []
+        SetInitiative val ->
+            { combatant | initiative = val } ! []
 
 
 
@@ -181,11 +225,18 @@ colourPallette =
 view : Model -> Html Msg
 view model =
     div []
-        [ h1 [] [ text "Martial Destiny" ]
-        , h3 [] [ text "A combat manager for Exalted 3rd" ]
-        , managePanel model.newCombatant
-        , tracker model.combatants
-        ]
+        ([ h1 [] [ text "Martial Destiny" ]
+         , h3 [] [ text "A combat manager for Exalted 3rd" ]
+         , managePanel model.newCombatant
+         , tracker model.combatants
+         ]
+            ++ case model.popUp of
+                Just (EditInitiative index) ->
+                    [ editPopUp index model.newInitiative ]
+
+                Nothing ->
+                    []
+        )
 
 
 managePanel : Combatant -> Html Msg
@@ -216,10 +267,10 @@ trackerStyling =
 
 
 combatantCard : Int -> Combatant -> Html Msg
-combatantCard index { name, initiative } =
+combatantCard index combatant =
     let
-        indexModBtn =
-            modifyInitiativeBtn index
+        { name, initiative } =
+            combatant
     in
         div [ css [ combatantCardStyle ] ]
             [ div
@@ -228,10 +279,9 @@ combatantCard index { name, initiative } =
                     ++ "i"
                     |> text
                 ]
-            , indexModBtn -5
-            , indexModBtn -1
-            , indexModBtn 1
-            , indexModBtn 5
+            , button
+                [ onClick <| OpenPopUp <| EditInitiative index ]
+                [ text "Edit" ]
             , div [] [ text name ]
             ]
 
@@ -257,11 +307,67 @@ initiativeFont =
         ]
 
 
+editPopUp : Int -> Int -> Html Msg
+editPopUp index initiative =
+    let
+        modifySetIndex =
+            modifyInitiativeBtn index
+    in
+        div []
+            [ disablingDiv
+            , div [ css [ popUpStyle ] ]
+                [ modifySetIndex -5
+                , modifySetIndex -1
+                , input
+                    [ onInput SetNewInitiative
+                    , value <| toString initiative
+                    ]
+                    [ text <| toString initiative ]
+                , modifySetIndex 1
+                , modifySetIndex 5
+                , button [ onClick <| ApplyNewInitiative index ] [ text "Ok" ]
+                , button [ onClick ClosePopUp ] [ text "Cancel" ]
+                ]
+            ]
+
+
+disablingDiv : Html msg
+disablingDiv =
+    div [ css [ disablingStyle ] ] []
+
+
+disablingStyle : Style
+disablingStyle =
+    Css.batch
+        [ zIndex (int 1000)
+        , position absolute
+        , top (pct 0)
+        , left (pct 0)
+        , Css.width (pct 100)
+        , Css.height (pct 100)
+        , backgroundColor <| hex "dddddd"
+        , opacity (num 0.5)
+        ]
+
+
+popUpStyle : Style
+popUpStyle =
+    Css.batch
+        [ zIndex (int 1001)
+        , backgroundColor colourPallette.c3
+        , padding (px 5)
+        , position absolute
+        , top (pct 50)
+        , left (pct 50)
+        , Css.width (px 200)
+        , Css.height (px 200)
+        ]
+
+
 modifyInitiativeBtn : Int -> Int -> Html Msg
 modifyInitiativeBtn index modifyBy =
     button
         [ onClick <|
-            UpdateCombatant index <|
-                ModifyInitiative modifyBy
+            ModifyNewInitiative modifyBy
         ]
         [ text <| toString modifyBy ]

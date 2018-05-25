@@ -65,8 +65,12 @@ type alias Combatants =
     Dict.Dict String Combatant
 
 
+
+-- Remove maybe for attacker
+
+
 type PopUp
-    = EditInitiative Int
+    = EditInitiative Combatant String
     | WitheringAttack (Maybe Combatant) (Maybe Combatant) (Maybe String) (Maybe Shift)
     | Closed
 
@@ -88,7 +92,7 @@ type Msg
     | ClosePopUp
     | ModifyNewInitiative Int
     | SetNewInitiative String
-    | ApplyNewInitiative Int
+    | ApplyNewInitiative
     | SetWitheringTarget Combatant
     | SetWitheringDamage String
     | ResolveWitheringDamage
@@ -142,19 +146,60 @@ update msg model =
         ClosePopUp ->
             { model | popUp = Closed } ! []
 
-        ModifyNewInitiative initiative ->
-            { model | newInitiative = model.newInitiative + initiative } ! []
+        ModifyNewInitiative modifyBy ->
+            case model.popUp of
+                EditInitiative combatant initiativeString ->
+                    { model
+                        | popUp =
+                            EditInitiative
+                                combatant
+                                (String.toInt initiativeString
+                                    |> Result.withDefault 0
+                                    |> (+) modifyBy
+                                    |> toString
+                                )
+                    }
+                        ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
 
         SetNewInitiative initiativeString ->
-            case String.toInt initiativeString of
-                Ok initiative ->
-                    { model | newInitiative = initiative } ! []
+            case model.popUp of
+                EditInitiative combatant _ ->
+                    { model
+                        | popUp =
+                            EditInitiative
+                                combatant
+                                initiativeString
+                    }
+                        ! []
 
-                Err _ ->
-                    model ! []
+                _ ->
+                    { model | popUp = Closed } ! []
 
-        ApplyNewInitiative index ->
-            model ! []
+        ApplyNewInitiative ->
+            case model.popUp of
+                EditInitiative combatant newInitiativeStr ->
+                    case String.toInt newInitiativeStr of
+                        Ok newInitiative ->
+                            { model
+                                | popUp = Closed
+                                , combatants =
+                                    Dict.insert
+                                        combatant.name
+                                        { combatant
+                                            | initiative = newInitiative
+                                        }
+                                        model.combatants
+                            }
+                                ! []
+
+                        Err _ ->
+                            { model | popUp = Closed } ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
 
         SetWitheringTarget defender ->
             case model.popUp of
@@ -388,8 +433,8 @@ view model =
          , tracker model.combatants
          ]
             ++ case model.popUp of
-                EditInitiative index ->
-                    [ editPopUp index model.newInitiative ]
+                (EditInitiative _ _) as editInitiative ->
+                    [ editPopUp editInitiative ]
 
                 (WitheringAttack _ _ _ _) as witheringAttack ->
                     [ witheringPopUp
@@ -452,7 +497,7 @@ combatantCard ( name, combatant ) =
             , text ("Onslaught: " ++ (toString combatant.onslaught))
             , br [] []
             , button
-                []
+                [ onClick <| OpenPopUp <| EditInitiative combatant "0" ]
                 [ text "Edit" ]
             , button
                 [ onClick <|
@@ -484,27 +529,39 @@ initiativeFont =
         ]
 
 
-editPopUp : Int -> Int -> Html Msg
-editPopUp index initiative =
+editPopUp : PopUp -> Html Msg
+editPopUp editInitiative =
     let
-        modifySetIndex =
-            modifyInitiativeBtn index
+        modifyInitiativeBtn modifyBy =
+            button
+                [ onClick <|
+                    ModifyNewInitiative modifyBy
+                ]
+                [ text <| toString modifyBy ]
     in
         div []
             [ disablingDiv
             , div [ css [ popUpStyle ] ]
-                [ modifySetIndex -5
-                , modifySetIndex -1
-                , input
-                    [ onInput SetNewInitiative
-                    , value <| toString initiative
-                    ]
-                    [ text <| toString initiative ]
-                , modifySetIndex 1
-                , modifySetIndex 5
-                , button [ onClick <| ApplyNewInitiative index ] [ text "Ok" ]
-                , button [ onClick ClosePopUp ] [ text "Cancel" ]
-                ]
+                ((case editInitiative of
+                    EditInitiative combatant newInitiative ->
+                        [ modifyInitiativeBtn -5
+                        , modifyInitiativeBtn -1
+                        , input
+                            [ onInput SetNewInitiative
+                            , value newInitiative
+                            ]
+                            []
+                        , modifyInitiativeBtn 1
+                        , modifyInitiativeBtn 5
+                        , button [ onClick <| ApplyNewInitiative ] [ text "Ok" ]
+                        ]
+
+                    _ ->
+                        []
+                 )
+                    ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ]
+                       ]
+                )
             ]
 
 
@@ -537,15 +594,6 @@ popUpStyle =
         , top (pct 50)
         , left (pct 50)
         ]
-
-
-modifyInitiativeBtn : Int -> Int -> Html Msg
-modifyInitiativeBtn index modifyBy =
-    button
-        [ onClick <|
-            ModifyNewInitiative modifyBy
-        ]
-        [ text <| toString modifyBy ]
 
 
 witheringPopUp : Combatants -> PopUp -> Html Msg

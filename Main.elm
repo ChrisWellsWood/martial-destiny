@@ -543,7 +543,7 @@ tracker : Combatants -> Html Msg
 tracker combatants =
     div [ css [ trackerStyling ] ]
         (Dict.toList combatants
-            |> List.map combatantCard
+            |> List.map (combatantCard <| Dict.size combatants)
         )
 
 
@@ -556,11 +556,17 @@ trackerStyling =
         ]
 
 
-combatantCard : ( String, Combatant ) -> Html Msg
-combatantCard ( name, combatant ) =
+combatantCard : Int -> ( String, Combatant ) -> Html Msg
+combatantCard numCombatants ( name, combatant ) =
     let
         { name, initiative } =
             combatant
+
+        attacksDisabled =
+            if numCombatants < 2 then
+                True
+            else
+                False
     in
         div [ css [ combatantCardStyle combatant.colour ] ]
             [ div [] [ text name ]
@@ -579,12 +585,14 @@ combatantCard ( name, combatant ) =
                 [ onClick <|
                     OpenPopUp <|
                         WitheringAttack combatant Nothing Nothing Nothing
+                , Html.Styled.Attributes.disabled attacksDisabled
                 ]
                 [ text "Withering" ]
             , button
                 [ onClick <|
                     OpenPopUp <|
                         DecisiveAttack combatant
+                , Html.Styled.Attributes.disabled attacksDisabled
                 ]
                 [ text "Decisive" ]
             ]

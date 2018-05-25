@@ -24,10 +24,8 @@ init =
 
 
 type alias Model =
-    { newCombatant : Combatant
-    , combatants : Combatants
+    { combatants : Combatants
     , turn : Int
-    , newInitiative : Int
     , popUp : PopUp
     }
 
@@ -35,9 +33,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     Model
-        defaultCombatant
         Dict.empty
-        1
         1
         Closed
 
@@ -47,6 +43,7 @@ type alias Combatant =
     , initiative : Int
     , crash : Maybe Crash
     , onslaught : Int
+    , colour : Colour
     }
 
 
@@ -56,22 +53,15 @@ type alias Crash =
     }
 
 
-defaultCombatant : Combatant
-defaultCombatant =
-    Combatant "" 1 Nothing 0
-
-
 type alias Combatants =
     Dict.Dict String Combatant
 
 
-
--- Remove maybe for attacker
-
-
 type PopUp
-    = EditInitiative Combatant String
-    | WitheringAttack (Maybe Combatant) (Maybe Combatant) (Maybe String) (Maybe Shift)
+    = NewCombatant String String Colour
+    | EditInitiative Combatant String
+    | WitheringAttack Combatant (Maybe Combatant) (Maybe String) (Maybe Shift)
+    | DecisiveAttack Combatant
     | Closed
 
 
@@ -80,16 +70,22 @@ type Shift
     | NoShift
 
 
+type AttackOutcome
+    = Hit
+    | Miss
+
+
 
 -- Update
 
 
 type Msg
-    = UpdateNewName String
-    | UpdateNewInit String
-    | AddCombatant
-    | OpenPopUp PopUp
+    = OpenPopUp PopUp
     | ClosePopUp
+    | SetCombatantName String
+    | SetJoinCombat String
+    | SetColour Colour
+    | AddNewCombatant
     | ModifyNewInitiative Int
     | SetNewInitiative String
     | ApplyNewInitiative
@@ -98,53 +94,91 @@ type Msg
     | ResolveWitheringDamage
     | SetShiftJoinCombat String
     | ResolveInitiativeShift
+    | ResolveDecisive AttackOutcome
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UpdateNewName name ->
-            let
-                newCombatant =
-                    model.newCombatant
-
-                updatedCombatant =
-                    { newCombatant | name = name }
-            in
-                { model | newCombatant = updatedCombatant } ! []
-
-        UpdateNewInit initiative ->
-            let
-                newCombatant =
-                    model.newCombatant
-
-                updatedCombatant =
-                    case String.toInt initiative of
-                        -- Add 3 to this
-                        Ok baseInit ->
-                            { newCombatant | initiative = baseInit }
-
-                        Err _ ->
-                            newCombatant
-            in
-                { model | newCombatant = updatedCombatant } ! []
-
-        AddCombatant ->
-            { model
-                | newCombatant = defaultCombatant
-                , combatants =
-                    Dict.insert
-                        model.newCombatant.name
-                        model.newCombatant
-                        model.combatants
-            }
-                ! []
-
         OpenPopUp popUp ->
             { model | popUp = popUp } ! []
 
         ClosePopUp ->
             { model | popUp = Closed } ! []
+
+        SetCombatantName name ->
+            case model.popUp of
+                NewCombatant _ joinCombat colour ->
+                    { model
+                        | popUp =
+                            NewCombatant
+                                name
+                                joinCombat
+                                colour
+                    }
+                        ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
+
+        SetJoinCombat joinCombat ->
+            case model.popUp of
+                NewCombatant name _ colour ->
+                    { model
+                        | popUp =
+                            NewCombatant
+                                name
+                                joinCombat
+                                colour
+                    }
+                        ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
+
+        SetColour colour ->
+            case model.popUp of
+                NewCombatant name joinCombat _ ->
+                    { model
+                        | popUp =
+                            NewCombatant
+                                name
+                                joinCombat
+                                colour
+                    }
+                        ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
+
+        AddNewCombatant ->
+            case model.popUp of
+                NewCombatant name joinCombatStr colour ->
+                    let
+                        joinCombat =
+                            String.toInt joinCombatStr
+                                |> Result.withDefault 0
+                                |> (+) 3
+
+                        newCombatant =
+                            Combatant
+                                name
+                                joinCombat
+                                Nothing
+                                0
+                                colour
+
+                        updatedCombatants =
+                            Dict.insert name newCombatant model.combatants
+                    in
+                        { model
+                            | popUp = Closed
+                            , combatants = updatedCombatants
+                        }
+                            ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
 
         ModifyNewInitiative modifyBy ->
             case model.popUp of
@@ -219,11 +253,11 @@ update msg model =
 
         SetWitheringDamage damage ->
             case model.popUp of
-                WitheringAttack (Just attacker) (Just defender) (Just _) _ ->
+                WitheringAttack attacker (Just defender) (Just _) _ ->
                     { model
                         | popUp =
                             WitheringAttack
-                                (Just attacker)
+                                attacker
                                 (Just defender)
                                 (Just damage)
                                 Nothing
@@ -235,7 +269,7 @@ update msg model =
 
         ResolveWitheringDamage ->
             case model.popUp of
-                WitheringAttack (Just attacker) (Just defender) (Just damage) Nothing ->
+                WitheringAttack attacker (Just defender) (Just damage) Nothing ->
                     let
                         ( uAttacker, uDefender, shift ) =
                             resolveWithering attacker defender damage
@@ -249,7 +283,7 @@ update msg model =
                                 { model
                                     | popUp =
                                         WitheringAttack
-                                            (Just uAttacker)
+                                            uAttacker
                                             (Just uDefender)
                                             (Just damage)
                                             (Just shift)
@@ -268,11 +302,11 @@ update msg model =
 
         SetShiftJoinCombat shiftJoinCombat ->
             case model.popUp of
-                WitheringAttack (Just a) (Just d) (Just dam) (Just (Shifted _)) ->
+                WitheringAttack a (Just d) (Just dam) (Just (Shifted _)) ->
                     { model
                         | popUp =
                             WitheringAttack
-                                (Just a)
+                                a
                                 (Just d)
                                 (Just dam)
                                 (Just (Shifted shiftJoinCombat))
@@ -284,7 +318,7 @@ update msg model =
 
         ResolveInitiativeShift ->
             case model.popUp of
-                WitheringAttack (Just a) (Just d) (Just dam) (Just (Shifted jc)) ->
+                WitheringAttack att (Just def) (Just dam) (Just (Shifted jc)) ->
                     let
                         joinCombat =
                             String.toInt jc
@@ -294,13 +328,33 @@ update msg model =
                             3 + joinCombat
 
                         attacker =
-                            { a
+                            { att
                                 | initiative =
-                                    if shiftInitiative > a.initiative then
+                                    if shiftInitiative > att.initiative then
                                         shiftInitiative
                                     else
-                                        a.initiative
+                                        att.initiative
                             }
+
+                        updatedCombatants =
+                            Dict.insert attacker.name attacker model.combatants
+                                |> Dict.insert def.name def
+                    in
+                        { model
+                            | popUp = Closed
+                            , combatants = updatedCombatants
+                        }
+                            ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
+
+        ResolveDecisive decisiveOutcome ->
+            case model.popUp of
+                DecisiveAttack combatant ->
+                    let
+                        attacker =
+                            resolveDecisive decisiveOutcome combatant
 
                         updatedCombatants =
                             Dict.insert attacker.name attacker model.combatants
@@ -380,6 +434,22 @@ resolveWithering attacker defender damageStr =
         ( updatedAttacker, updatedDefender, shift )
 
 
+resolveDecisive : AttackOutcome -> Combatant -> Combatant
+resolveDecisive outcome combatant =
+    case outcome of
+        Hit ->
+            { combatant | initiative = 3 }
+
+        Miss ->
+            { combatant
+                | initiative =
+                    if combatant.initiative < 11 then
+                        combatant.initiative - 2
+                    else
+                        combatant.initiative - 3
+            }
+
+
 
 -- Subscriptions
 
@@ -429,10 +499,21 @@ view model =
     div [ css [ defaultStyle ] ]
         ([ h1 [] [ text "Threads of Martial Destiny" ]
          , h3 [] [ text "A combat manager for Exalted 3rd" ]
-         , managePanel model.newCombatant
+         , button
+            [ NewCombatant
+                ""
+                "0"
+                colourPallette.c4
+                |> OpenPopUp
+                |> onClick
+            ]
+            [ text "Add Combatant" ]
          , tracker model.combatants
          ]
             ++ case model.popUp of
+                (NewCombatant _ _ _) as newCombatant ->
+                    [ newCombatantPopUp newCombatant ]
+
                 (EditInitiative _ _) as editInitiative ->
                     [ editPopUp editInitiative ]
 
@@ -440,6 +521,10 @@ view model =
                     [ witheringPopUp
                         model.combatants
                         witheringAttack
+                    ]
+
+                (DecisiveAttack _) as decisiveAttack ->
+                    [ decisivePopUp decisiveAttack
                     ]
 
                 Closed ->
@@ -451,15 +536,6 @@ defaultStyle : Style
 defaultStyle =
     Css.batch
         [ fontFamilies [ "Tahoma", "Geneva", "sans-serif" ]
-        ]
-
-
-managePanel : Combatant -> Html Msg
-managePanel { name, initiative } =
-    div []
-        [ input [ onInput UpdateNewName, value name ] []
-        , input [ onInput UpdateNewInit, value <| toString initiative ] []
-        , button [ onClick AddCombatant ] [ text "Add Combatant" ]
         ]
 
 
@@ -486,7 +562,7 @@ combatantCard ( name, combatant ) =
         { name, initiative } =
             combatant
     in
-        div [ css [ combatantCardStyle ] ]
+        div [ css [ combatantCardStyle combatant.colour ] ]
             [ div [] [ text name ]
             , div
                 [ css [ initiativeFont ] ]
@@ -497,23 +573,29 @@ combatantCard ( name, combatant ) =
             , text ("Onslaught: " ++ (toString combatant.onslaught))
             , br [] []
             , button
-                [ onClick <| OpenPopUp <| EditInitiative combatant "0" ]
+                [ onClick <| OpenPopUp <| EditInitiative combatant "1" ]
                 [ text "Edit" ]
             , button
                 [ onClick <|
                     OpenPopUp <|
-                        WitheringAttack (Just combatant) Nothing Nothing Nothing
+                        WitheringAttack combatant Nothing Nothing Nothing
                 ]
                 [ text "Withering" ]
+            , button
+                [ onClick <|
+                    OpenPopUp <|
+                        DecisiveAttack combatant
+                ]
+                [ text "Decisive" ]
             ]
 
 
-combatantCardStyle : Style
-combatantCardStyle =
+combatantCardStyle : Colour -> Style
+combatantCardStyle bgColour =
     Css.batch
         [ padding (px 5)
         , margin (px 5)
-        , backgroundColor colourPallette.c3
+        , backgroundColor bgColour
         , Css.width (px 150)
         , Css.height (px 150)
         , overflow Css.hidden
@@ -526,6 +608,48 @@ initiativeFont =
     Css.batch
         [ fontSize (px 30)
         , fontWeight bold
+        ]
+
+
+newCombatantPopUp : PopUp -> Html Msg
+newCombatantPopUp newCombatant =
+    div []
+        [ disablingDiv
+        , div [ css [ popUpStyle ] ]
+            ((case newCombatant of
+                NewCombatant name joinCombatStr colour ->
+                    let
+                        addDisabled =
+                            case String.toInt joinCombatStr of
+                                Ok joinCombat ->
+                                    False
+
+                                Err _ ->
+                                    True
+                    in
+                        [ b [] [ text "Add New Combatant" ]
+                        , br [] []
+                        , text "Name"
+                        , br [] []
+                        , input [ onInput SetCombatantName ] []
+                        , br [] []
+                        , text "Join Combat Successes"
+                        , br [] []
+                        , input [ onInput SetJoinCombat, size 3 ] []
+                        , br [] []
+                        , button
+                            [ onClick AddNewCombatant
+                            , Html.Styled.Attributes.disabled addDisabled
+                            ]
+                            [ text "Add" ]
+                        ]
+
+                _ ->
+                    []
+             )
+                ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ]
+                   ]
+            )
         ]
 
 
@@ -591,8 +715,10 @@ popUpStyle =
         , backgroundColor colourPallette.c3
         , padding (px 5)
         , position absolute
+        , transform (translate2 (pct -50) (pct -50))
         , top (pct 50)
         , left (pct 50)
+        , Css.width (px 300)
         ]
 
 
@@ -607,7 +733,7 @@ witheringPopUp combatants popUp =
             [ disablingDiv
             , div [ css [ popUpStyle ] ]
                 ((case popUp of
-                    WitheringAttack (Just attacker) Nothing Nothing _ ->
+                    WitheringAttack attacker Nothing Nothing _ ->
                         [ b [] [ text "Select Target" ]
                         ]
                             ++ (Dict.toList combatants
@@ -616,7 +742,7 @@ witheringPopUp combatants popUp =
                                     |> List.map selectTarget
                                )
 
-                    WitheringAttack (Just attacker) (Just defender) (Just damageStr) Nothing ->
+                    WitheringAttack attacker (Just defender) (Just damageStr) Nothing ->
                         let
                             resolveDisabled =
                                 case String.toInt damageStr of
@@ -680,3 +806,27 @@ witheringPopUp combatants popUp =
                     ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ] ]
                 )
             ]
+
+
+decisivePopUp : PopUp -> Html Msg
+decisivePopUp popUp =
+    div []
+        [ disablingDiv
+        , div [ css [ popUpStyle ] ]
+            ((case popUp of
+                DecisiveAttack combatant ->
+                    [ b [] [ text "Decisive Attack" ]
+                    , br [] []
+                    , text combatant.name
+                    , br [] []
+                    , button [ onClick <| ResolveDecisive Hit ] [ text "Hit" ]
+                    , button [ onClick <| ResolveDecisive Miss ] [ text "Miss" ]
+                    , br [] []
+                    ]
+
+                _ ->
+                    []
+             )
+                ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ] ]
+            )
+        ]

@@ -2,10 +2,12 @@ module Main exposing (..)
 
 import Css exposing (..)
 import Dict
+import Dom
 import Html
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Html.Styled.Events exposing (..)
+import Task
 
 
 main : Program Never Model Msg
@@ -81,6 +83,7 @@ type AttackOutcome
 
 type Msg
     = OpenPopUp PopUp
+    | FocusResult (Result Dom.Error ())
     | ClosePopUp
     | SetCombatantName String
     | SetJoinCombat String
@@ -101,7 +104,22 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OpenPopUp popUp ->
-            { model | popUp = popUp } ! []
+            { model | popUp = popUp }
+                ! [ Dom.focus "pop-up-focus"
+                        |> Task.attempt FocusResult
+                  ]
+
+        FocusResult result ->
+            case result of
+                Err (Dom.NotFound id) ->
+                    let
+                        error =
+                            "ID \"" ++ id ++ "\"not found."
+                    in
+                        model ! []
+
+                Ok () ->
+                    model ! []
 
         ClosePopUp ->
             { model | popUp = Closed } ! []
@@ -639,7 +657,7 @@ newCombatantPopUp newCombatant =
                         , br [] []
                         , text "Name"
                         , br [] []
-                        , input [ onInput SetCombatantName ] []
+                        , input [ id "pop-up-focus", onInput SetCombatantName ] []
                         , br [] []
                         , text "Join Combat Successes"
                         , br [] []
@@ -676,17 +694,31 @@ editPopUp editInitiative =
             , div [ css [ popUpStyle ] ]
                 ((case editInitiative of
                     EditInitiative combatant newInitiative ->
-                        [ modifyInitiativeBtn -5
-                        , modifyInitiativeBtn -1
-                        , input
-                            [ onInput SetNewInitiative
-                            , value newInitiative
+                        let
+                            resolveDisabled =
+                                case String.toInt newInitiative of
+                                    Ok _ ->
+                                        False
+
+                                    Err _ ->
+                                        True
+                        in
+                            [ modifyInitiativeBtn -5
+                            , modifyInitiativeBtn -1
+                            , input
+                                [ id "pop-up-focus"
+                                , onInput SetNewInitiative
+                                , value newInitiative
+                                ]
+                                []
+                            , modifyInitiativeBtn 1
+                            , modifyInitiativeBtn 5
+                            , button
+                                [ onClick <| ApplyNewInitiative
+                                , Html.Styled.Attributes.disabled resolveDisabled
+                                ]
+                                [ text "Ok" ]
                             ]
-                            []
-                        , modifyInitiativeBtn 1
-                        , modifyInitiativeBtn 5
-                        , button [ onClick <| ApplyNewInitiative ] [ text "Ok" ]
-                        ]
 
                     _ ->
                         []

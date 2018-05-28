@@ -45,7 +45,6 @@ type alias Combatant =
     , initiative : Int
     , crash : Maybe Crash
     , onslaught : Int
-    , colour : Colour
     }
 
 
@@ -60,7 +59,7 @@ type alias Combatants =
 
 
 type PopUp
-    = NewCombatant String String Colour
+    = NewCombatant String String
     | EditInitiative Combatant String
     | WitheringAttack Combatant (Maybe Combatant) (Maybe String) (Maybe Shift)
     | DecisiveAttack Combatant
@@ -126,13 +125,12 @@ update msg model =
 
         SetCombatantName name ->
             case model.popUp of
-                NewCombatant _ joinCombat colour ->
+                NewCombatant _ joinCombat ->
                     { model
                         | popUp =
                             NewCombatant
                                 name
                                 joinCombat
-                                colour
                     }
                         ! []
 
@@ -141,13 +139,12 @@ update msg model =
 
         SetJoinCombat joinCombat ->
             case model.popUp of
-                NewCombatant name _ colour ->
+                NewCombatant name _ ->
                     { model
                         | popUp =
                             NewCombatant
                                 name
                                 joinCombat
-                                colour
                     }
                         ! []
 
@@ -156,13 +153,12 @@ update msg model =
 
         SetColour colour ->
             case model.popUp of
-                NewCombatant name joinCombat _ ->
+                NewCombatant name joinCombat ->
                     { model
                         | popUp =
                             NewCombatant
                                 name
                                 joinCombat
-                                colour
                     }
                         ! []
 
@@ -171,7 +167,7 @@ update msg model =
 
         AddNewCombatant ->
             case model.popUp of
-                NewCombatant name joinCombatStr colour ->
+                NewCombatant name joinCombatStr ->
                     let
                         joinCombat =
                             String.toInt joinCombatStr
@@ -184,7 +180,6 @@ update msg model =
                                 joinCombat
                                 Nothing
                                 0
-                                colour
 
                         updatedCombatants =
                             Dict.insert name newCombatant model.combatants
@@ -478,83 +473,72 @@ subscriptions model =
 
 
 
--- Styles
-
-
-type alias Colour =
-    Color
-
-
-type alias ColourPallette =
-    { c1 : Colour
-    , c2 : Colour
-    , c3 : Colour
-    , c4 : Colour
-    , c5 : Colour
-    }
-
-
-
--- https://coolors.co/413c58-a3c4bc-bfd7b5-e7efc5-f2dda4
-
-
-colourPallette : ColourPallette
-colourPallette =
-    { c1 = hex "413c58"
-    , c2 = hex "a3c4bc"
-    , c3 = hex "bfd7b5"
-    , c4 = hex "e7efc5"
-    , c5 = hex "f2dda4"
-    }
-
-
-
 -- Views
 
 
 view : Model -> Html Msg
 view model =
     div [ css [ defaultStyle ] ]
-        ([ h1 [] [ text "Threads of Martial Destiny" ]
-         , h3 [] [ text "A combat manager for Exalted 3rd" ]
+        ([ header
+            []
+            [ h1 [ css [ headerStyle ] ] [ text "Threads of Martial Destiny" ]
+            , h3 [] [ text "A combat manager for Exalted 3rd" ]
+            ]
          , button
             [ NewCombatant
                 ""
                 "0"
-                colourPallette.c4
                 |> OpenPopUp
                 |> onClick
             ]
             [ text "Add Combatant" ]
          , tracker model.combatants
          ]
-            ++ case model.popUp of
-                (NewCombatant _ _ _) as newCombatant ->
-                    [ newCombatantPopUp newCombatant ]
+            ++ (case model.popUp of
+                    (NewCombatant _ _) as newCombatant ->
+                        [ newCombatantPopUp newCombatant ]
 
-                (EditInitiative _ _) as editInitiative ->
-                    [ editPopUp editInitiative ]
+                    (EditInitiative _ _) as editInitiative ->
+                        [ editPopUp editInitiative ]
 
-                (WitheringAttack _ _ _ _) as witheringAttack ->
-                    [ witheringPopUp
-                        model.combatants
-                        witheringAttack
+                    (WitheringAttack _ _ _ _) as witheringAttack ->
+                        [ witheringPopUp
+                            model.combatants
+                            witheringAttack
+                        ]
+
+                    (DecisiveAttack _) as decisiveAttack ->
+                        [ decisivePopUp decisiveAttack
+                        ]
+
+                    Closed ->
+                        []
+               )
+            ++ ([ footer [ css [ footerStyle ] ]
+                    [ hr [] []
+                    , text "Icons made by "
+                    , a
+                        [ href "https://www.flaticon.com/authors/dave-gandy"
+                        , title "Dave Gandy"
+                        ]
+                        [ text "Dave Gandy" ]
+                    , text " from "
+                    , a
+                        [ href "https://www.flaticon.com/"
+                        , title "Flaticon"
+                        ]
+                        [ text "www.flaticon.com" ]
+                    , text " is licensed by "
+                    , a
+                        [ href "http://creativecommons.org/licenses/by/3.0/"
+                        , title "Creative Commons BY 3.0"
+                        , Html.Styled.Attributes.target "_blank"
+                        ]
+                        [ text "CC 3.0 BY" ]
                     ]
-
-                (DecisiveAttack _) as decisiveAttack ->
-                    [ decisivePopUp decisiveAttack
-                    ]
-
-                Closed ->
-                    []
+                ]
+               )
         )
-
-
-defaultStyle : Style
-defaultStyle =
-    Css.batch
-        [ fontFamilies [ "Tahoma", "Geneva", "sans-serif" ]
-        ]
 
 
 tracker : Combatants -> Html Msg
@@ -563,15 +547,6 @@ tracker combatants =
         (Dict.toList combatants
             |> List.map (combatantCard <| Dict.size combatants)
         )
-
-
-trackerStyling : Style
-trackerStyling =
-    Css.batch
-        [ padding (px 5)
-        , displayFlex
-        , flexWrap Css.wrap
-        ]
 
 
 combatantCard : Int -> ( String, Combatant ) -> Html Msg
@@ -585,20 +560,31 @@ combatantCard numCombatants ( name, combatant ) =
                 True
             else
                 False
+
+        colour =
+            if initiative < 1 then
+                colourPallette.crash
+            else if initiative < 11 then
+                colourPallette.lowInitiative
+            else
+                colourPallette.highInitiative
     in
-        div [ css [ combatantCardStyle combatant.colour ] ]
+        div [ css [ combatantCardStyle colour ] ]
             [ div [] [ text name ]
             , div
-                [ css [ initiativeFont ] ]
+                [ css [ initiativeStyle ] ]
                 [ (toString initiative)
                     ++ "i"
                     |> text
+                , img
+                    [ src "imgs/edit.svg"
+                    , css [ iconStyle ]
+                    , onClick <| OpenPopUp <| EditInitiative combatant "1"
+                    ]
+                    []
                 ]
             , text ("Onslaught: " ++ (toString combatant.onslaught))
             , br [] []
-            , button
-                [ onClick <| OpenPopUp <| EditInitiative combatant "1" ]
-                [ text "Edit" ]
             , button
                 [ onClick <|
                     OpenPopUp <|
@@ -616,34 +602,13 @@ combatantCard numCombatants ( name, combatant ) =
             ]
 
 
-combatantCardStyle : Colour -> Style
-combatantCardStyle bgColour =
-    Css.batch
-        [ padding (px 5)
-        , margin (px 5)
-        , backgroundColor bgColour
-        , Css.width (px 150)
-        , Css.height (px 150)
-        , overflow Css.hidden
-        , overflowWrap normal
-        ]
-
-
-initiativeFont : Style
-initiativeFont =
-    Css.batch
-        [ fontSize (px 30)
-        , fontWeight bold
-        ]
-
-
 newCombatantPopUp : PopUp -> Html Msg
 newCombatantPopUp newCombatant =
     div []
         [ disablingDiv
         , div [ css [ popUpStyle ] ]
             ((case newCombatant of
-                NewCombatant name joinCombatStr colour ->
+                NewCombatant name joinCombatStr ->
                     let
                         addDisabled =
                             case String.toInt joinCombatStr of
@@ -713,6 +678,7 @@ editPopUp editInitiative =
                                 []
                             , modifyInitiativeBtn 1
                             , modifyInitiativeBtn 5
+                            , br [] []
                             , button
                                 [ onClick <| ApplyNewInitiative
                                 , Html.Styled.Attributes.disabled resolveDisabled
@@ -732,34 +698,6 @@ editPopUp editInitiative =
 disablingDiv : Html msg
 disablingDiv =
     div [ css [ disablingStyle ] ] []
-
-
-disablingStyle : Style
-disablingStyle =
-    Css.batch
-        [ zIndex (int 1000)
-        , position absolute
-        , top (pct 0)
-        , left (pct 0)
-        , Css.width (pct 100)
-        , Css.height (pct 100)
-        , backgroundColor <| hex "dddddd"
-        , opacity (num 0.5)
-        ]
-
-
-popUpStyle : Style
-popUpStyle =
-    Css.batch
-        [ zIndex (int 1001)
-        , backgroundColor colourPallette.c3
-        , padding (px 5)
-        , position absolute
-        , transform (translate2 (pct -50) (pct -50))
-        , top (pct 50)
-        , left (pct 50)
-        , Css.width (px 300)
-        ]
 
 
 witheringPopUp : Combatants -> PopUp -> Html Msg
@@ -869,4 +807,139 @@ decisivePopUp popUp =
              )
                 ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ] ]
             )
+        ]
+
+
+
+-- Styles
+
+
+type alias Colour =
+    Color
+
+
+type alias ColourPallette =
+    { lowInitiative : Colour
+    , highInitiative : Colour
+    , crash : Colour
+    , turnFinished : Colour
+    , popUp : Colour
+    , backgroundColor : Colour
+    }
+
+
+
+-- https://coolors.co/91d696-b4d174-edc855-e49f64-d96969
+
+
+colourPallette : ColourPallette
+colourPallette =
+    { highInitiative = hex "91d696"
+    , lowInitiative = hex "edc855"
+    , crash = hex "d96969"
+    , turnFinished = hex "888888"
+    , popUp = hex "66d76d"
+    , backgroundColor = hex "eeeeee"
+    }
+
+
+defaultStyle : Style
+defaultStyle =
+    Css.batch
+        [ fontFamilies [ "Tahoma", "Geneva", "sans-serif" ]
+        , Css.height (pct 100)
+        , backgroundColor colourPallette.backgroundColor
+        , Css.width (pct 100)
+        , padding3 (px 0) (pct 5) (px 0)
+        , position absolute
+        , top (px 0)
+        , left (px 0)
+        ]
+
+
+headerStyle : Style
+headerStyle =
+    Css.batch
+        [ padding (px 0)
+        , margin (px 0)
+        ]
+
+
+footerStyle : Style
+footerStyle =
+    Css.batch
+        [ position absolute
+        , bottom (px 0)
+        ]
+
+
+iconStyle : Style
+iconStyle =
+    Css.batch
+        [ Css.bottom (px 0)
+        , Css.height (px 25)
+        , Css.margin auto
+        , Css.padding3 (px 0) (px 5) (px 0)
+        , Css.position absolute
+        , Css.top (px 0)
+        , Css.width (px 25)
+        ]
+
+
+trackerStyling : Style
+trackerStyling =
+    Css.batch
+        [ padding (px 5)
+        , displayFlex
+        , flexWrap Css.wrap
+        ]
+
+
+combatantCardStyle : Colour -> Style
+combatantCardStyle bgColour =
+    Css.batch
+        [ padding (px 5)
+        , margin (px 5)
+        , backgroundColor bgColour
+        , Css.width (px 150)
+        , Css.height (px 150)
+        , overflow Css.hidden
+        , overflowWrap normal
+        ]
+
+
+initiativeStyle : Style
+initiativeStyle =
+    Css.batch
+        [ fontSize (px 30)
+        , fontWeight bold
+        , position relative
+        ]
+
+
+disablingStyle : Style
+disablingStyle =
+    Css.batch
+        [ zIndex (int 1000)
+        , position absolute
+        , top (pct 0)
+        , left (pct 0)
+        , Css.width (pct 100)
+        , Css.height (pct 100)
+        , backgroundColor <| hex "dddddd"
+        , opacity (num 0.5)
+        ]
+
+
+popUpStyle : Style
+popUpStyle =
+    Css.batch
+        [ zIndex (int 1001)
+        , backgroundColor colourPallette.popUp
+        , padding (px 5)
+        , position absolute
+        , transform (translate2 (pct -50) (pct -50))
+        , top (pct 50)
+        , left (pct 50)
+        , Css.width (px 300)
         ]

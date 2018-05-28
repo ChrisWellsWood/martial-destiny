@@ -479,66 +479,71 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div [ css [ defaultStyle ] ]
-        ([ header
-            []
-            [ h1 [ css [ headerStyle ] ] [ text "Threads of Martial Destiny" ]
-            , h3 [] [ text "A combat manager for Exalted 3rd" ]
-            ]
-         , button
-            [ NewCombatant
-                ""
-                "0"
-                |> OpenPopUp
-                |> onClick
-            ]
-            [ text "Add Combatant" ]
-         , tracker model.combatants
-         ]
-            ++ (case model.popUp of
-                    (NewCombatant _ _) as newCombatant ->
-                        [ newCombatantPopUp newCombatant ]
-
-                    (EditInitiative _ _) as editInitiative ->
-                        [ editPopUp editInitiative ]
-
-                    (WitheringAttack _ _ _ _) as witheringAttack ->
-                        [ witheringPopUp
-                            model.combatants
-                            witheringAttack
-                        ]
-
-                    (DecisiveAttack _) as decisiveAttack ->
-                        [ decisivePopUp decisiveAttack
-                        ]
-
-                    Closed ->
-                        []
-               )
-            ++ ([ footer [ css [ footerStyle ] ]
-                    [ hr [] []
-                    , text "Icons made by "
-                    , a
-                        [ href "https://www.flaticon.com/authors/dave-gandy"
-                        , title "Dave Gandy"
-                        ]
-                        [ text "Dave Gandy" ]
-                    , text " from "
-                    , a
-                        [ href "https://www.flaticon.com/"
-                        , title "Flaticon"
-                        ]
-                        [ text "www.flaticon.com" ]
-                    , text " is licensed by "
-                    , a
-                        [ href "http://creativecommons.org/licenses/by/3.0/"
-                        , title "Creative Commons BY 3.0"
-                        , Html.Styled.Attributes.target "_blank"
-                        ]
-                        [ text "CC 3.0 BY" ]
-                    ]
+        [ header
+            [ css [ headerStyle, rowFlexStyle ] ]
+            [ div []
+                [ h1 [ css [ h1Style ] ] [ text "Threads of Martial Destiny" ]
+                , h3 [ css [ h3Style ] ] [ text "A combat manager for Exalted 3rd" ]
                 ]
-               )
-        )
+            , div []
+                [ img
+                    [ css [ iconStyle ]
+                    , src "imgs/add.svg"
+                    , NewCombatant
+                        ""
+                        "0"
+                        |> OpenPopUp
+                        |> onClick
+                    , title "Add Combatant"
+                    ]
+                    [ text "Add Combatant" ]
+                ]
+            ]
+        , div [ css [ bodyStyle ] ]
+            ([ tracker model.combatants ]
+                ++ (case model.popUp of
+                        (NewCombatant _ _) as newCombatant ->
+                            [ newCombatantPopUp newCombatant ]
+
+                        (EditInitiative _ _) as editInitiative ->
+                            [ editPopUp editInitiative ]
+
+                        (WitheringAttack _ _ _ _) as witheringAttack ->
+                            [ witheringPopUp
+                                model.combatants
+                                witheringAttack
+                            ]
+
+                        (DecisiveAttack _) as decisiveAttack ->
+                            [ decisivePopUp decisiveAttack
+                            ]
+
+                        Closed ->
+                            []
+                   )
+            )
+        , footer [ css [ footerStyle ] ]
+            [ text "Icons made by "
+            , a
+                [ href "https://www.flaticon.com/authors/dave-gandy"
+                , title "Dave Gandy"
+                ]
+                [ text "Dave Gandy" ]
+            , text " from "
+            , a
+                [ href "https://www.flaticon.com/"
+                , title "Flaticon"
+                ]
+                [ text "www.flaticon.com" ]
+            , text " is licensed by "
+            , a
+                [ href "http://creativecommons.org/licenses/by/3.0/"
+                , title "Creative Commons BY 3.0"
+                , Html.Styled.Attributes.target "_blank"
+                ]
+                [ text "CC 3.0 BY" ]
+            ]
+        ]
 
 
 tracker : Combatants -> Html Msg
@@ -570,35 +575,52 @@ combatantCard numCombatants ( name, combatant ) =
                 colourPallette.highInitiative
     in
         div [ css [ combatantCardStyle colour ] ]
-            [ div [] [ text name ]
+            [ b [] [ text name ]
+            , styledHR [] []
             , div
-                [ css [ initiativeStyle ] ]
+                [ css
+                    [ rowFlexStyle
+                    , initiativeStyle
+                    ]
+                ]
                 [ (toString initiative)
                     ++ "i"
                     |> text
                 , img
                     [ src "imgs/edit.svg"
-                    , css [ iconStyle ]
+                    , css
+                        [ iconStyle
+                        ]
                     , onClick <| OpenPopUp <| EditInitiative combatant "1"
+                    , title "Edit"
                     ]
                     []
                 ]
+            , styledHR [] []
             , text ("Onslaught: " ++ (toString combatant.onslaught))
-            , br [] []
-            , button
-                [ onClick <|
-                    OpenPopUp <|
-                        WitheringAttack combatant Nothing Nothing Nothing
-                , Html.Styled.Attributes.disabled attacksDisabled
+            , styledHR [] []
+            , div [ css [ rowFlexStyle ] ]
+                [ img
+                    [ css [ iconStyle ]
+                    , onClick <|
+                        OpenPopUp <|
+                            WitheringAttack combatant Nothing Nothing Nothing
+                    , Html.Styled.Attributes.disabled attacksDisabled
+                    , src "imgs/withered-flower.svg"
+                    , title "Withering attack"
+                    ]
+                    [ text "Withering" ]
+                , img
+                    [ css [ iconStyle ]
+                    , onClick <|
+                        OpenPopUp <|
+                            DecisiveAttack combatant
+                    , Html.Styled.Attributes.disabled attacksDisabled
+                    , src "imgs/sword.svg"
+                    , title "Decisive Attack"
+                    ]
+                    [ text "Decisive" ]
                 ]
-                [ text "Withering" ]
-            , button
-                [ onClick <|
-                    OpenPopUp <|
-                        DecisiveAttack combatant
-                , Html.Styled.Attributes.disabled attacksDisabled
-                ]
-                [ text "Decisive" ]
             ]
 
 
@@ -622,13 +644,13 @@ newCombatantPopUp newCombatant =
                         , br [] []
                         , text "Name"
                         , br [] []
-                        , input [ id "pop-up-focus", onInput SetCombatantName ] []
+                        , styledInput [ id "pop-up-focus", onInput SetCombatantName ] []
                         , br [] []
                         , text "Join Combat Successes"
                         , br [] []
-                        , input [ onInput SetJoinCombat, size 3 ] []
+                        , styledInput [ onInput SetJoinCombat, size 3 ] []
                         , br [] []
-                        , button
+                        , styledButton
                             [ onClick AddNewCombatant
                             , Html.Styled.Attributes.disabled addDisabled
                             ]
@@ -638,7 +660,7 @@ newCombatantPopUp newCombatant =
                 _ ->
                     []
              )
-                ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ]
+                ++ [ styledButton [ onClick ClosePopUp ] [ text "Cancel" ]
                    ]
             )
         ]
@@ -648,7 +670,7 @@ editPopUp : PopUp -> Html Msg
 editPopUp editInitiative =
     let
         modifyInitiativeBtn modifyBy =
-            button
+            styledButton
                 [ onClick <|
                     ModifyNewInitiative modifyBy
                 ]
@@ -668,20 +690,24 @@ editPopUp editInitiative =
                                     Err _ ->
                                         True
                         in
-                            [ modifyInitiativeBtn -5
+                            [ b [] [ text "Edit Initiative" ]
+                            , br [] []
+                            , modifyInitiativeBtn -5
                             , modifyInitiativeBtn -1
-                            , input
+                            , styledInput
                                 [ id "pop-up-focus"
                                 , onInput SetNewInitiative
                                 , value newInitiative
+                                , size 3
                                 ]
                                 []
                             , modifyInitiativeBtn 1
                             , modifyInitiativeBtn 5
                             , br [] []
-                            , button
+                            , styledButton
                                 [ onClick <| ApplyNewInitiative
                                 , Html.Styled.Attributes.disabled resolveDisabled
+                                , title "Edit"
                                 ]
                                 [ text "Ok" ]
                             ]
@@ -689,7 +715,7 @@ editPopUp editInitiative =
                     _ ->
                         []
                  )
-                    ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ]
+                    ++ [ styledButton [ onClick ClosePopUp ] [ text "Cancel" ]
                        ]
                 )
             ]
@@ -737,14 +763,14 @@ witheringPopUp combatants popUp =
                                 ++ defender.name
                                 |> text
                             , br [] []
-                            , input
+                            , styledInput
                                 [ onInput SetWitheringDamage
                                 , value <| damageStr
                                 , size 3
                                 ]
                                 []
                             , br [] []
-                            , button
+                            , styledButton
                                 [ onClick ResolveWitheringDamage
                                 , Html.Styled.Attributes.disabled
                                     resolveDisabled
@@ -766,11 +792,11 @@ witheringPopUp combatants popUp =
                             , br [] []
                             , text "Join Combat Result"
                             , br [] []
-                            , input
+                            , styledInput
                                 [ onInput SetShiftJoinCombat ]
                                 []
                             , br [] []
-                            , button
+                            , styledButton
                                 [ onClick ResolveInitiativeShift
                                 , Html.Styled.Attributes.disabled
                                     resolveDisabled
@@ -781,7 +807,7 @@ witheringPopUp combatants popUp =
                     _ ->
                         []
                  )
-                    ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ] ]
+                    ++ [ styledButton [ onClick ClosePopUp ] [ text "Cancel" ] ]
                 )
             ]
 
@@ -797,15 +823,15 @@ decisivePopUp popUp =
                     , br [] []
                     , text combatant.name
                     , br [] []
-                    , button [ onClick <| ResolveDecisive Hit ] [ text "Hit" ]
-                    , button [ onClick <| ResolveDecisive Miss ] [ text "Miss" ]
+                    , styledButton [ onClick <| ResolveDecisive Hit ] [ text "Hit" ]
+                    , styledButton [ onClick <| ResolveDecisive Miss ] [ text "Miss" ]
                     , br [] []
                     ]
 
                 _ ->
                     []
              )
-                ++ [ button [ onClick ClosePopUp ] [ text "Cancel" ] ]
+                ++ [ styledButton [ onClick ClosePopUp ] [ text "Cancel" ] ]
             )
         ]
 
@@ -823,7 +849,6 @@ type alias ColourPallette =
     , highInitiative : Colour
     , crash : Colour
     , turnFinished : Colour
-    , popUp : Colour
     , backgroundColor : Colour
     }
 
@@ -837,8 +862,7 @@ colourPallette =
     { highInitiative = hex "91d696"
     , lowInitiative = hex "edc855"
     , crash = hex "d96969"
-    , turnFinished = hex "888888"
-    , popUp = hex "66d76d"
+    , turnFinished = hex "999999"
     , backgroundColor = hex "eeeeee"
     }
 
@@ -847,50 +871,130 @@ defaultStyle : Style
 defaultStyle =
     Css.batch
         [ fontFamilies [ "Tahoma", "Geneva", "sans-serif" ]
+        , fontSize (px 18)
         , Css.height (pct 100)
-        , backgroundColor colourPallette.backgroundColor
         , Css.width (pct 100)
-        , padding3 (px 0) (pct 5) (px 0)
         , position absolute
         , top (px 0)
         , left (px 0)
         ]
 
 
+styledHR : List (Attribute msg) -> List (Html msg) -> Html msg
+styledHR =
+    styled hr
+        [ borderWidth (px 1)
+        , borderStyle solid
+        , borderColor <| hex "000000"
+        ]
+
+
+styledInput : List (Attribute msg) -> List (Html msg) -> Html msg
+styledInput =
+    styled input
+        [ borderWidth (px 2)
+        , borderStyle solid
+        , borderColor <| hex "000000"
+        , fontSize (px 18)
+        , margin (px 3)
+        , padding (px 3)
+        ]
+
+
+styledButton : List (Attribute msg) -> List (Html msg) -> Html msg
+styledButton =
+    styled button
+        [ backgroundColor colourPallette.turnFinished
+        , borderWidth (px 2)
+        , borderStyle solid
+        , borderColor <| hex "000000"
+        , color <| hex "000000"
+        , fontSize (px 18)
+        , margin (px 3)
+        , outline none
+        , padding (px 3)
+        ]
+
+
 headerStyle : Style
 headerStyle =
+    Css.batch
+        [ backgroundColor colourPallette.crash
+        , padding (px 8)
+        , Css.width auto
+        , borderWidth4 (px 0) (px 0) (px 2) (px 0)
+        , borderStyle solid
+        , borderColor <| hex "000000"
+        ]
+
+
+rowFlexStyle : Style
+rowFlexStyle =
+    Css.batch
+        [ displayFlex
+        , position relative
+        , justifyContent spaceBetween
+        , alignItems center
+        ]
+
+
+h1Style : Style
+h1Style =
     Css.batch
         [ padding (px 0)
         , margin (px 0)
         ]
 
 
+h3Style : Style
+h3Style =
+    Css.batch
+        [ padding (px 0)
+        , margin (px 0)
+        , fontSize (px 16)
+        ]
+
+
+bodyStyle : Style
+bodyStyle =
+    Css.batch
+        [ backgroundColor colourPallette.backgroundColor
+        , Css.width (pct 100)
+        , Css.height (pct 100)
+        ]
+
+
 footerStyle : Style
 footerStyle =
     Css.batch
-        [ position absolute
+        [ borderWidth4 (px 2) (px 0) (px 0) (px 0)
+        , borderStyle solid
+        , borderColor <| hex "000000"
+        , position absolute
         , bottom (px 0)
+        , Css.width (pct 100)
+        , fontSize (px 12)
+        , color <| hex "aaaaaa"
+        , padding (px 5)
         ]
 
 
 iconStyle : Style
 iconStyle =
     Css.batch
-        [ Css.bottom (px 0)
-        , Css.height (px 25)
-        , Css.margin auto
-        , Css.padding3 (px 0) (px 5) (px 0)
-        , Css.position absolute
-        , Css.top (px 0)
-        , Css.width (px 25)
+        [ backgroundColor colourPallette.turnFinished
+        , Css.height (px 24)
+        , padding (px 3)
+        , Css.width (px 24)
+        , borderStyle solid
+        , borderWidth (px 2)
         ]
 
 
 trackerStyling : Style
 trackerStyling =
     Css.batch
-        [ padding (px 5)
-        , displayFlex
+        [ displayFlex
         , flexWrap Css.wrap
         ]
 
@@ -898,21 +1002,22 @@ trackerStyling =
 combatantCardStyle : Colour -> Style
 combatantCardStyle bgColour =
     Css.batch
-        [ padding (px 5)
-        , margin (px 5)
-        , backgroundColor bgColour
-        , Css.width (px 150)
-        , Css.height (px 150)
+        [ backgroundColor bgColour
+        , borderStyle solid
+        , borderWidth (px 2)
+        , Css.width (px 180)
+        , Css.height (px 180)
         , overflow Css.hidden
         , overflowWrap normal
+        , padding (px 8)
+        , margin (px 2)
         ]
 
 
 initiativeStyle : Style
 initiativeStyle =
     Css.batch
-        [ fontSize (px 30)
-        , fontWeight bold
+        [ fontSize (px 36)
         , position relative
         ]
 
@@ -934,12 +1039,14 @@ disablingStyle =
 popUpStyle : Style
 popUpStyle =
     Css.batch
-        [ zIndex (int 1001)
-        , backgroundColor colourPallette.popUp
+        [ backgroundColor colourPallette.lowInitiative
+        , borderStyle solid
+        , borderWidth (px 2)
+        , left (pct 50)
         , padding (px 5)
         , position absolute
-        , transform (translate2 (pct -50) (pct -50))
         , top (pct 50)
-        , left (pct 50)
+        , transform (translate2 (pct -50) (pct -50))
         , Css.width (px 300)
+        , zIndex (int 1001)
         ]

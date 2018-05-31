@@ -97,6 +97,7 @@ type Msg
     | SetShiftJoinCombat String
     | ResolveInitiativeShift
     | ResolveDecisive AttackOutcome
+    | ResetOnslaught Combatant
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -381,6 +382,22 @@ update msg model =
                 _ ->
                     { model | popUp = Closed } ! []
 
+        ResetOnslaught combatant ->
+            let
+                updatedCombatant =
+                    { combatant | onslaught = 0 }
+
+                updatedCombatants =
+                    Dict.insert
+                        updatedCombatant.name
+                        updatedCombatant
+                        model.combatants
+            in
+                { model
+                    | combatants = updatedCombatants
+                }
+                    ! []
+
 
 sortByInitiative : Combatants -> Combatants
 sortByInitiative combatants =
@@ -445,6 +462,7 @@ resolveWithering attacker defender damageStr =
         updatedAttacker =
             { attacker
                 | initiative = attInitiative
+                , onslaught = 0
                 , crash =
                     if attInitiative > 0 then
                         Nothing
@@ -468,6 +486,7 @@ resolveDecisive outcome combatant =
                         combatant.initiative - 2
                     else
                         combatant.initiative - 3
+                , onslaught = 0
             }
 
 
@@ -495,7 +514,7 @@ view model =
                 ]
             , div []
                 [ img
-                    [ css [ iconStyle ]
+                    [ css [ iconStyle True ]
                     , src "imgs/add.svg"
                     , NewCombatant
                         ""
@@ -570,11 +589,11 @@ combatantCard numCombatants combatant =
         { name, initiative } =
             combatant
 
-        attacksDisabled =
+        attacksActive =
             if numCombatants < 2 then
-                True
-            else
                 False
+            else
+                True
 
         colour =
             if initiative < 1 then
@@ -599,7 +618,7 @@ combatantCard numCombatants combatant =
                 , img
                     [ src "imgs/edit.svg"
                     , css
-                        [ iconStyle
+                        [ iconStyle True
                         ]
                     , onClick <| OpenPopUp <| EditInitiative combatant "1"
                     , title "Edit"
@@ -611,25 +630,36 @@ combatantCard numCombatants combatant =
             , styledHR [] []
             , div [ css [ rowFlexStyle ] ]
                 [ img
-                    [ css [ iconStyle ]
-                    , onClick <|
-                        OpenPopUp <|
-                            WitheringAttack combatant Nothing Nothing Nothing
-                    , Html.Styled.Attributes.disabled attacksDisabled
-                    , src "imgs/withered-flower.svg"
-                    , title "Withering attack"
-                    ]
+                    ([ css [ iconStyle attacksActive ]
+                     , src "imgs/withered-flower.svg"
+                     , title "Withering attack"
+                     ]
+                        ++ if attacksActive then
+                            [ onClick <|
+                                OpenPopUp <|
+                                    WitheringAttack combatant Nothing Nothing Nothing
+                            ]
+                           else
+                            []
+                    )
                     [ text "Withering" ]
                 , img
-                    [ css [ iconStyle ]
+                    [ css [ iconStyle attacksActive ]
                     , onClick <|
                         OpenPopUp <|
                             DecisiveAttack combatant
-                    , Html.Styled.Attributes.disabled attacksDisabled
                     , src "imgs/sword.svg"
                     , title "Decisive Attack"
                     ]
                     [ text "Decisive" ]
+                , img
+                    [ css [ iconStyle True ]
+                    , onClick <|
+                        ResetOnslaught combatant
+                    , src "imgs/reset.svg"
+                    , title "Reset Onslaught"
+                    ]
+                    [ text "Reset Onslaught" ]
                 ]
             ]
 
@@ -645,7 +675,12 @@ newCombatantPopUp newCombatant =
                         addDisabled =
                             case String.toInt joinCombatStr of
                                 Ok joinCombat ->
-                                    False
+                                    case name of
+                                        "" ->
+                                            True
+
+                                        _ ->
+                                            False
 
                                 Err _ ->
                                     True
@@ -658,7 +693,12 @@ newCombatantPopUp newCombatant =
                         , br [] []
                         , text "Join Combat Successes"
                         , br [] []
-                        , styledInput [ onInput SetJoinCombat, size 3 ] []
+                        , styledInput
+                            [ onInput SetJoinCombat
+                            , size 3
+                            , value joinCombatStr
+                            ]
+                            []
                         , br [] []
                         , styledButton
                             [ onClick AddNewCombatant
@@ -857,6 +897,7 @@ type alias ColourPallette =
     , highInitiative : Colour
     , crash : Colour
     , turnFinished : Colour
+    , clicked : Colour
     , backgroundColor : Colour
     }
 
@@ -871,6 +912,7 @@ colourPallette =
     , lowInitiative = hex "edc855"
     , crash = hex "d96969"
     , turnFinished = hex "999999"
+    , clicked = hex "777777"
     , backgroundColor = hex "eeeeee"
     }
 
@@ -913,6 +955,10 @@ styledButton : List (Attribute msg) -> List (Html msg) -> Html msg
 styledButton =
     styled button
         [ backgroundColor colourPallette.turnFinished
+        , Css.active
+            [ backgroundColor colourPallette.clicked ]
+        , Css.disabled
+            [ backgroundColor colourPallette.backgroundColor ]
         , borderWidth (px 2)
         , borderStyle solid
         , borderColor <| hex "000000"
@@ -987,16 +1033,23 @@ footerStyle =
         ]
 
 
-iconStyle : Style
-iconStyle =
+iconStyle : Bool -> Style
+iconStyle active =
     Css.batch
-        [ backgroundColor colourPallette.turnFinished
-        , Css.height (px 24)
-        , padding (px 3)
-        , Css.width (px 24)
-        , borderStyle solid
-        , borderWidth (px 2)
-        ]
+        ([ Css.height (px 24)
+         , padding (px 3)
+         , Css.width (px 24)
+         , borderStyle solid
+         , borderWidth (px 2)
+         ]
+            ++ if active then
+                [ backgroundColor colourPallette.turnFinished
+                , Css.active
+                    [ backgroundColor colourPallette.clicked ]
+                ]
+               else
+                [ backgroundColor colourPallette.backgroundColor ]
+        )
 
 
 trackerStyling : Style

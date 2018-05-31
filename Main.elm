@@ -89,6 +89,7 @@ type Msg
     | SetCombatantName String
     | SetJoinCombat String
     | AddNewCombatant
+    | NewCombat
     | StartNewRound
     | ModifyInitiative Int
     | SetInitiative String
@@ -184,6 +185,9 @@ update msg model =
 
                 _ ->
                     { model | popUp = Closed } ! []
+
+        NewCombat ->
+            emptyModel ! []
 
         StartNewRound ->
             let
@@ -584,6 +588,16 @@ view model =
                     , title "Add Combatant"
                     ]
                     [ text "Add Combatant" ]
+                , img
+                    [ css [ iconStyle True ]
+                    , src "imgs/new-combat.svg"
+                    , onClick <|
+                        OpenPopUp <|
+                            Confirm "New Combat" <|
+                                NewCombat
+                    , title "New Combat"
+                    ]
+                    [ text "New Combat" ]
                 ]
             ]
         , div [ css [ bodyStyle ] ]
@@ -1242,6 +1256,7 @@ iconStyle active =
     Css.batch
         ([ Css.height (px 24)
          , padding (px 3)
+         , margin (px 3)
          , Css.width (px 24)
          , borderStyle solid
          , borderWidth (px 2)

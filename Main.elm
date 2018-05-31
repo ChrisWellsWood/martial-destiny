@@ -90,8 +90,8 @@ type Msg
     | SetJoinCombat String
     | SetColour Colour
     | AddNewCombatant
-    | ModifyNewInitiative Int
-    | SetNewInitiative String
+    | ModifyInitiative Int
+    | SetInitiative String
     | ApplyNewInitiative
     | SetWitheringTarget Combatant
     | SetWitheringDamage String
@@ -198,7 +198,7 @@ update msg model =
                 _ ->
                     { model | popUp = Closed } ! []
 
-        ModifyNewInitiative modifyBy ->
+        ModifyInitiative modifyBy ->
             case model.popUp of
                 EditInitiative combatant initiativeString ->
                     { model
@@ -216,7 +216,7 @@ update msg model =
                 _ ->
                     { model | popUp = Closed } ! []
 
-        SetNewInitiative initiativeString ->
+        SetInitiative initiativeString ->
             case model.popUp of
                 EditInitiative combatant _ ->
                     { model
@@ -667,7 +667,9 @@ combatantCard numCombatants combatant =
                     , css
                         [ iconStyle True
                         ]
-                    , onClick <| OpenPopUp <| EditInitiative combatant "1"
+                    , onClick <|
+                        OpenPopUp <|
+                            EditInitiative combatant (toString initiative)
                     , title "Edit"
                     ]
                     []
@@ -778,7 +780,7 @@ editPopUp editInitiative =
         modifyInitiativeBtn modifyBy =
             styledButton
                 [ onClick <|
-                    ModifyNewInitiative modifyBy
+                    ModifyInitiative modifyBy
                 ]
                 [ text <| toString modifyBy ]
     in
@@ -802,7 +804,7 @@ editPopUp editInitiative =
                             , modifyInitiativeBtn -1
                             , styledInput
                                 [ id "pop-up-focus"
-                                , onInput SetNewInitiative
+                                , onInput SetInitiative
                                 , value newInitiative
                                 , size 3
                                 ]

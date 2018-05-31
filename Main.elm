@@ -27,7 +27,7 @@ init =
 
 type alias Model =
     { combatants : Combatants
-    , turn : Int
+    , round : Int
     , popUp : PopUp
     }
 
@@ -88,8 +88,8 @@ type Msg
     | ClosePopUp
     | SetCombatantName String
     | SetJoinCombat String
-    | SetColour Colour
     | AddNewCombatant
+    | StartNewRound
     | ModifyInitiative Int
     | SetInitiative String
     | ApplyNewInitiative
@@ -155,20 +155,6 @@ update msg model =
                 _ ->
                     { model | popUp = Closed } ! []
 
-        SetColour colour ->
-            case model.popUp of
-                NewCombatant name joinCombat ->
-                    { model
-                        | popUp =
-                            NewCombatant
-                                name
-                                joinCombat
-                    }
-                        ! []
-
-                _ ->
-                    { model | popUp = Closed } ! []
-
         AddNewCombatant ->
             case model.popUp of
                 NewCombatant name joinCombatStr ->
@@ -197,6 +183,21 @@ update msg model =
 
                 _ ->
                     { model | popUp = Closed } ! []
+
+        StartNewRound ->
+            let
+                updatedCombatants =
+                    Dict.values model.combatants
+                        |> List.map decrementCrash
+                        |> List.map (\c -> { c | turnFinished = False })
+                        |> List.map (\c -> ( c.name, c ))
+                        |> Dict.fromList
+            in
+                { model
+                    | combatants = updatedCombatants
+                    , round = model.round + 1
+                }
+                    ! []
 
         ModifyInitiative modifyBy ->
             case model.popUp of
@@ -424,6 +425,26 @@ sortByInitiative combatants =
         |> Dict.fromList
 
 
+decrementCrash : Combatant -> Combatant
+decrementCrash combatant =
+    case combatant.crash of
+        Just crash ->
+            let
+                updatedCrash =
+                    { crash | turnsUntilReset = crash.turnsUntilReset - 1 }
+            in
+                if updatedCrash.turnsUntilReset < 1 then
+                    { combatant
+                        | crash = Nothing
+                        , initiative = 3
+                    }
+                else
+                    { combatant | crash = Just updatedCrash }
+
+        Nothing ->
+            combatant
+
+
 resolveWithering :
     Combatant
     -> Combatant
@@ -546,7 +567,7 @@ view model =
                 ]
             ]
         , div [ css [ bodyStyle ] ]
-            ([ tracker model.combatants ]
+            ([ tracker model.round model.combatants ]
                 ++ (case model.popUp of
                         (NewCombatant _ _) as newCombatant ->
                             [ newCombatantPopUp newCombatant ]
@@ -596,8 +617,8 @@ view model =
         ]
 
 
-tracker : Combatants -> Html Msg
-tracker combatants =
+tracker : Int -> Combatants -> Html Msg
+tracker round combatants =
     let
         readyCombatants =
             Dict.values combatants
@@ -613,7 +634,18 @@ tracker combatants =
     in
         div []
             (if Dict.size combatants > 0 then
-                [ h2 [ css [ h2Style ] ] [ text "Ready" ]
+                [ div [ css [ turnStyle, rowFlexStyle ] ]
+                    [ h2 [ css [ h2Style ] ]
+                        [ text <| "Round " ++ (toString round) ]
+                    , img
+                        [ css [ iconStyle True ]
+                        , onClick StartNewRound
+                        , src "imgs/end-round.svg"
+                        , title "Next Round"
+                        ]
+                        [ text "Next Round" ]
+                    ]
+                , h2 [ css [ h2Style ] ] [ text "Ready" ]
                 , div [ css [ trackerStyling ] ]
                     (List.map (combatantCard <| Dict.size combatants)
                         readyCombatants
@@ -1063,6 +1095,19 @@ headerStyle =
         ]
 
 
+turnStyle : Style
+turnStyle =
+    Css.batch
+        [ backgroundColor colourPallette.highInitiative
+        , padding (px 8)
+        , Css.width auto
+        , borderWidth4 (px 0) (px 0) (px 2) (px 0)
+        , borderStyle solid
+        , borderColor <| hex "000000"
+        , margin4 (px 0) (px 0) (px 4) (px 0)
+        ]
+
+
 rowFlexStyle : Style
 rowFlexStyle =
     Css.batch
@@ -1148,8 +1193,8 @@ combatantCardStyle bgColour =
         [ backgroundColor bgColour
         , borderStyle solid
         , borderWidth (px 2)
-        , Css.width (px 180)
-        , Css.height (px 180)
+        , Css.width (px 200)
+        , Css.height (px 200)
         , overflow Css.hidden
         , overflowWrap normal
         , padding (px 8)

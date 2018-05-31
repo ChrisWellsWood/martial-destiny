@@ -879,7 +879,7 @@ newCombatantPopUp newCombatant =
                             , value joinCombatStr
                             ]
                             []
-                        , br [] []
+                        , styledHR [] []
                         , styledButton
                             [ onClick AddNewCombatant
                             , Html.Styled.Attributes.disabled addDisabled
@@ -933,7 +933,7 @@ editPopUp editInitiative =
                                 []
                             , modifyInitiativeBtn 1
                             , modifyInitiativeBtn 5
-                            , br [] []
+                            , styledHR [] []
                             , styledButton
                                 [ onClick <| ApplyNewInitiative
                                 , Html.Styled.Attributes.disabled resolveDisabled
@@ -960,8 +960,12 @@ witheringPopUp : Combatants -> PopUp -> Html Msg
 witheringPopUp combatants popUp =
     let
         selectTarget combatant =
-            div [ onClick <| SetWitheringTarget combatant ]
-                [ text combatant.name ]
+            div
+                [ css [ selectStyle ]
+                , onClick <| SetWitheringTarget combatant
+                ]
+                [ text combatant.name
+                ]
     in
         div []
             [ disablingDiv
@@ -975,6 +979,7 @@ witheringPopUp combatants popUp =
                                     |> List.map Tuple.second
                                     |> List.map selectTarget
                                )
+                            ++ [ styledHR [] [] ]
 
                     WitheringAttack attacker (Just defender) (Just damageStr) Nothing ->
                         let
@@ -999,7 +1004,7 @@ witheringPopUp combatants popUp =
                                 , size 3
                                 ]
                                 []
-                            , br [] []
+                            , styledHR [] []
                             , styledButton
                                 [ onClick ResolveWitheringDamage
                                 , Html.Styled.Attributes.disabled
@@ -1025,7 +1030,7 @@ witheringPopUp combatants popUp =
                             , styledInput
                                 [ onInput SetShiftJoinCombat ]
                                 []
-                            , br [] []
+                            , styledHR [] []
                             , styledButton
                                 [ onClick ResolveInitiativeShift
                                 , Html.Styled.Attributes.disabled
@@ -1053,7 +1058,7 @@ decisivePopUp popUp =
                     , br [] []
                     , styledButton [ onClick <| ResolveDecisive Hit ] [ text "Hit" ]
                     , styledButton [ onClick <| ResolveDecisive Miss ] [ text "Miss" ]
-                    , br [] []
+                    , styledHR [] []
                     ]
 
                 _ ->
@@ -1074,7 +1079,7 @@ confirmPopUp popUp =
                     [ b [] [ text description ]
                     , br [] []
                     , text "Are you sure?"
-                    , br [] []
+                    , styledHR [] []
                     , styledButton [ onClick <| msg ]
                         [ text "Ok" ]
                     ]
@@ -1316,6 +1321,17 @@ disablingStyle =
         , Css.height (pct 100)
         , backgroundColor <| hex "dddddd"
         , opacity (num 0.5)
+        ]
+
+
+selectStyle : Style
+selectStyle =
+    Css.batch
+        [ margin (px 3)
+        , textAlign center
+        , Css.hover
+            [ backgroundColor colourPallette.turnFinished
+            ]
         ]
 
 

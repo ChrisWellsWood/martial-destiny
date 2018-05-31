@@ -64,7 +64,7 @@ type PopUp
     | EditInitiative Combatant String
     | WitheringAttack Combatant (Maybe Combatant) (Maybe String) (Maybe Shift)
     | DecisiveAttack Combatant
-    | DeleteCombatant Combatant
+    | Confirm String Msg
     | Closed
 
 
@@ -100,6 +100,7 @@ type Msg
     | ResolveInitiativeShift
     | ResolveDecisive AttackOutcome
     | ResetOnslaught Combatant
+    | EndTurn Combatant
     | ResolveDelete Combatant
 
 
@@ -400,6 +401,24 @@ update msg model =
             in
                 { model
                     | combatants = updatedCombatants
+                    , popUp = Closed
+                }
+                    ! []
+
+        EndTurn combatant ->
+            let
+                updatedCombatant =
+                    { combatant | turnFinished = True }
+
+                updatedCombatants =
+                    Dict.insert
+                        updatedCombatant.name
+                        updatedCombatant
+                        model.combatants
+            in
+                { model
+                    | combatants = updatedCombatants
+                    , popUp = Closed
                 }
                     ! []
 
@@ -585,8 +604,8 @@ view model =
                             [ decisivePopUp decisiveAttack
                             ]
 
-                        (DeleteCombatant _) as deleteCombatant ->
-                            [ deletePopUp deleteCombatant
+                        (Confirm _ _) as confirm ->
+                            [ confirmPopUp confirm
                             ]
 
                         Closed ->
@@ -736,7 +755,9 @@ combatantCard numCombatants combatant =
                 , img
                     [ css [ iconStyle True ]
                     , onClick <|
-                        ResetOnslaught combatant
+                        OpenPopUp <|
+                            Confirm "Reset Onslaught" <|
+                                ResetOnslaught combatant
                     , src "imgs/reset.svg"
                     , title "Reset Onslaught"
                     ]
@@ -745,7 +766,18 @@ combatantCard numCombatants combatant =
                     [ css [ iconStyle True ]
                     , onClick <|
                         OpenPopUp <|
-                            DeleteCombatant combatant
+                            Confirm "End Turn" <|
+                                EndTurn combatant
+                    , src "imgs/end-turn.svg"
+                    , title "End Turn"
+                    ]
+                    [ text "End Turn" ]
+                , img
+                    [ css [ iconStyle True ]
+                    , onClick <|
+                        OpenPopUp <|
+                            Confirm "Delete Combatant" <|
+                                ResolveDelete combatant
                     , src "imgs/delete.svg"
                     , title "Delete Combatant"
                     ]
@@ -974,19 +1006,19 @@ decisivePopUp popUp =
         ]
 
 
-deletePopUp : PopUp -> Html Msg
-deletePopUp popUp =
+confirmPopUp : PopUp -> Html Msg
+confirmPopUp popUp =
     div []
         [ disablingDiv
         , div [ css [ popUpStyle ] ]
             ((case popUp of
-                DeleteCombatant combatant ->
-                    [ b [] [ text "Delete Combatant" ]
+                Confirm description msg ->
+                    [ b [] [ text description ]
                     , br [] []
                     , text "Are you sure?"
                     , br [] []
-                    , styledButton [ onClick <| ResolveDelete combatant ]
-                        [ text "Delete" ]
+                    , styledButton [ onClick <| msg ]
+                        [ text "Ok" ]
                     ]
 
                 _ ->
@@ -1049,6 +1081,8 @@ styledHR =
         [ borderWidth (px 1)
         , borderStyle solid
         , borderColor <| hex "000000"
+        , marginLeft (px 0)
+        , marginRight (px 0)
         ]
 
 
@@ -1194,11 +1228,13 @@ combatantCardStyle bgColour =
         , borderStyle solid
         , borderWidth (px 2)
         , Css.width (px 200)
-        , Css.height (px 200)
         , overflow Css.hidden
         , overflowWrap normal
         , padding (px 8)
         , margin4 (px 2) (px 0) (px 2) (px 2)
+        , displayFlex
+        , flexDirection column
+        , justifyContent spaceBetween
         ]
 
 

@@ -382,6 +382,14 @@ update msg model =
                     { model | popUp = Closed } ! []
 
 
+sortByInitiative : Combatants -> Combatants
+sortByInitiative combatants =
+    Dict.toList combatants
+        |> List.sortBy (\( n, c ) -> c.initiative)
+        |> List.reverse
+        |> Dict.fromList
+
+
 resolveWithering :
     Combatant
     -> Combatant
@@ -549,13 +557,15 @@ view model =
 tracker : Combatants -> Html Msg
 tracker combatants =
     div [ css [ trackerStyling ] ]
-        (Dict.toList combatants
+        (Dict.values combatants
+            |> List.sortBy .initiative
+            |> List.reverse
             |> List.map (combatantCard <| Dict.size combatants)
         )
 
 
-combatantCard : Int -> ( String, Combatant ) -> Html Msg
-combatantCard numCombatants ( name, combatant ) =
+combatantCard : Int -> Combatant -> Html Msg
+combatantCard numCombatants combatant =
     let
         { name, initiative } =
             combatant
@@ -821,8 +831,6 @@ decisivePopUp popUp =
                 DecisiveAttack combatant ->
                     [ b [] [ text "Decisive Attack" ]
                     , br [] []
-                    , text combatant.name
-                    , br [] []
                     , styledButton [ onClick <| ResolveDecisive Hit ] [ text "Hit" ]
                     , styledButton [ onClick <| ResolveDecisive Miss ] [ text "Miss" ]
                     , br [] []
@@ -996,6 +1004,7 @@ trackerStyling =
     Css.batch
         [ displayFlex
         , flexWrap Css.wrap
+        , justifyContent center
         ]
 
 
@@ -1010,7 +1019,7 @@ combatantCardStyle bgColour =
         , overflow Css.hidden
         , overflowWrap normal
         , padding (px 8)
-        , margin (px 2)
+        , margin4 (px 2) (px 0) (px 2) (px 2)
         ]
 
 

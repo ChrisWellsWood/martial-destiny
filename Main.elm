@@ -756,7 +756,21 @@ combatantCard numCombatants combatant =
                     []
                 ]
             , styledHR [] []
-            , text ("Onslaught: " ++ (toString combatant.onslaught))
+            , div []
+                ([ text ("Onslaught: " ++ (toString combatant.onslaught))
+                 ]
+                    ++ case combatant.crash of
+                        Just crash ->
+                            [ br [] []
+                            , text
+                                ("Crash:"
+                                    ++ (toString crash.turnsUntilReset)
+                                )
+                            ]
+
+                        Nothing ->
+                            []
+                )
             , styledHR [] []
             , div [ css [ rowFlexStyle ] ]
                 [ img

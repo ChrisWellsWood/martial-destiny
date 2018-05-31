@@ -197,6 +197,7 @@ update msg model =
                 { model
                     | combatants = updatedCombatants
                     , round = model.round + 1
+                    , popUp = Closed
                 }
                     ! []
 
@@ -569,7 +570,7 @@ view model =
             [ css [ headerStyle, rowFlexStyle ] ]
             [ div []
                 [ h1 [ css [ h1Style ] ] [ text "Threads of Martial Destiny" ]
-                , b [] [ text "A combat manager for Exalted 3rd" ]
+                , b [] [ text "A combat manager for Exalted 3rd Edition" ]
                 ]
             , div []
                 [ img
@@ -613,12 +614,38 @@ view model =
                    )
             )
         , footer [ css [ footerStyle ] ]
-            [ text "Icons made by "
+            [ text "© Chris Wells Wood, 2018. Exalted is © White Wolf AB and Onyx Path."
+            , br [] []
+            , text "Icons made by "
+            , a
+                [ href "https://www.flaticon.com/authors/appzgear"
+                , title "Appzgear"
+                ]
+                [ text "Appzgear" ]
+            , text ", "
             , a
                 [ href "https://www.flaticon.com/authors/dave-gandy"
                 , title "Dave Gandy"
                 ]
                 [ text "Dave Gandy" ]
+            , text ", "
+            , a
+                [ href "https://www.flaticon.com/authors/eleonor-wang"
+                , title "Eleonor Wang"
+                ]
+                [ text "Eleonor Wang" ]
+            , text ", "
+            , a
+                [ href "http://www.freepik.com"
+                , title "Freepik"
+                ]
+                [ text "Freepik" ]
+            , text " and "
+            , a
+                [ href "https://www.flaticon.com/authors/pixel-perfect"
+                , title "Pixel perfect"
+                ]
+                [ text "Pixel perfect" ]
             , text " from "
             , a
                 [ href "https://www.flaticon.com/"
@@ -631,7 +658,7 @@ view model =
                 , title "Creative Commons BY 3.0"
                 , Html.Styled.Attributes.target "_blank"
                 ]
-                [ text "CC 3.0 BY" ]
+                [ text "CC 3.0 BY." ]
             ]
         ]
 
@@ -658,7 +685,10 @@ tracker round combatants =
                         [ text <| "Round " ++ (toString round) ]
                     , img
                         [ css [ iconStyle True ]
-                        , onClick StartNewRound
+                        , onClick <|
+                            OpenPopUp <|
+                                Confirm "End Round" <|
+                                    StartNewRound
                         , src "imgs/end-round.svg"
                         , title "Next Round"
                         ]

@@ -45,6 +45,7 @@ type alias Combatant =
     , initiative : Int
     , crash : Maybe Crash
     , onslaught : Int
+    , turnFinished : Bool
     }
 
 
@@ -63,6 +64,7 @@ type PopUp
     | EditInitiative Combatant String
     | WitheringAttack Combatant (Maybe Combatant) (Maybe String) (Maybe Shift)
     | DecisiveAttack Combatant
+    | DeleteCombatant Combatant
     | Closed
 
 
@@ -98,6 +100,7 @@ type Msg
     | ResolveInitiativeShift
     | ResolveDecisive AttackOutcome
     | ResetOnslaught Combatant
+    | ResolveDelete Combatant
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -181,6 +184,7 @@ update msg model =
                                 joinCombat
                                 Nothing
                                 0
+                                False
 
                         updatedCombatants =
                             Dict.insert name newCombatant model.combatants
@@ -398,6 +402,19 @@ update msg model =
                 }
                     ! []
 
+        ResolveDelete combatant ->
+            let
+                updatedCombatants =
+                    Dict.remove
+                        combatant.name
+                        model.combatants
+            in
+                { model
+                    | combatants = updatedCombatants
+                    , popUp = Closed
+                }
+                    ! []
+
 
 sortByInitiative : Combatants -> Combatants
 sortByInitiative combatants =
@@ -468,6 +485,7 @@ resolveWithering attacker defender damageStr =
                         Nothing
                     else
                         attacker.crash
+                , turnFinished = True
             }
     in
         ( updatedAttacker, updatedDefender, shift )
@@ -487,6 +505,7 @@ resolveDecisive outcome combatant =
                     else
                         combatant.initiative - 3
                 , onslaught = 0
+                , turnFinished = True
             }
 
 
@@ -510,7 +529,7 @@ view model =
             [ css [ headerStyle, rowFlexStyle ] ]
             [ div []
                 [ h1 [ css [ h1Style ] ] [ text "Threads of Martial Destiny" ]
-                , h3 [ css [ h3Style ] ] [ text "A combat manager for Exalted 3rd" ]
+                , b [] [ text "A combat manager for Exalted 3rd" ]
                 ]
             , div []
                 [ img
@@ -545,6 +564,10 @@ view model =
                             [ decisivePopUp decisiveAttack
                             ]
 
+                        (DeleteCombatant _) as deleteCombatant ->
+                            [ deletePopUp deleteCombatant
+                            ]
+
                         Closed ->
                             []
                    )
@@ -575,18 +598,42 @@ view model =
 
 tracker : Combatants -> Html Msg
 tracker combatants =
-    div [ css [ trackerStyling ] ]
-        (Dict.values combatants
-            |> List.sortBy .initiative
-            |> List.reverse
-            |> List.map (combatantCard <| Dict.size combatants)
-        )
+    let
+        readyCombatants =
+            Dict.values combatants
+                |> List.filter (not << .turnFinished)
+                |> List.sortBy .initiative
+                |> List.reverse
+
+        turnFinishedCombatants =
+            Dict.values combatants
+                |> List.filter .turnFinished
+                |> List.sortBy .initiative
+                |> List.reverse
+    in
+        div []
+            (if Dict.size combatants > 0 then
+                [ h2 [ css [ h2Style ] ] [ text "Ready" ]
+                , div [ css [ trackerStyling ] ]
+                    (List.map (combatantCard <| Dict.size combatants)
+                        readyCombatants
+                    )
+                , styledHR [] []
+                , h2 [ css [ h2Style ] ] [ text "Turn Finished" ]
+                , div [ css [ trackerStyling ] ]
+                    (List.map (combatantCard <| Dict.size combatants)
+                        turnFinishedCombatants
+                    )
+                ]
+             else
+                []
+            )
 
 
 combatantCard : Int -> Combatant -> Html Msg
 combatantCard numCombatants combatant =
     let
-        { name, initiative } =
+        { name, initiative, turnFinished } =
             combatant
 
         attacksActive =
@@ -660,6 +707,15 @@ combatantCard numCombatants combatant =
                     , title "Reset Onslaught"
                     ]
                     [ text "Reset Onslaught" ]
+                , img
+                    [ css [ iconStyle True ]
+                    , onClick <|
+                        OpenPopUp <|
+                            DeleteCombatant combatant
+                    , src "imgs/delete.svg"
+                    , title "Delete Combatant"
+                    ]
+                    [ text "Delete Combatant" ]
                 ]
             ]
 
@@ -884,6 +940,29 @@ decisivePopUp popUp =
         ]
 
 
+deletePopUp : PopUp -> Html Msg
+deletePopUp popUp =
+    div []
+        [ disablingDiv
+        , div [ css [ popUpStyle ] ]
+            ((case popUp of
+                DeleteCombatant combatant ->
+                    [ b [] [ text "Delete Combatant" ]
+                    , br [] []
+                    , text "Are you sure?"
+                    , br [] []
+                    , styledButton [ onClick <| ResolveDelete combatant ]
+                        [ text "Delete" ]
+                    ]
+
+                _ ->
+                    []
+             )
+                ++ [ styledButton [ onClick ClosePopUp ] [ text "Cancel" ] ]
+            )
+        ]
+
+
 
 -- Styles
 
@@ -1000,12 +1079,12 @@ h1Style =
         ]
 
 
-h3Style : Style
-h3Style =
+h2Style : Style
+h2Style =
     Css.batch
         [ padding (px 0)
         , margin (px 0)
-        , fontSize (px 16)
+        , textAlign center
         ]
 
 

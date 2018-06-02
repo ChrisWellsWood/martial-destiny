@@ -92,6 +92,7 @@ type PopUp
     | DecisiveAttack Combatant
     | EditOnslaught Combatant String
     | Confirm String Msg
+    | Help
     | Closed
 
 
@@ -668,6 +669,15 @@ view model =
                     [ text "Add Combatant" ]
                 , img
                     [ css [ iconStyle True ]
+                    , src "imgs/help.svg"
+                    , onClick <|
+                        OpenPopUp <|
+                            Help
+                    , title "Help"
+                    ]
+                    [ text "Help" ]
+                , img
+                    [ css [ iconStyle True ]
                     , src "imgs/new-combat.svg"
                     , onClick <|
                         OpenPopUp <|
@@ -703,6 +713,9 @@ view model =
                         (Confirm _ _) as confirm ->
                             [ confirmPopUp confirm
                             ]
+
+                        Help ->
+                            [ helpPopUp ]
 
                         Closed ->
                             []
@@ -1231,6 +1244,88 @@ confirmPopUp popUp =
              )
                 ++ [ styledButton [ onClick ClosePopUp ] [ text "Cancel" ] ]
             )
+        ]
+
+
+helpPopUp : Html Msg
+helpPopUp =
+    div []
+        [ disablingDiv
+        , div
+            [ css
+                [ popUpStyle
+                , Css.maxHeight (pct 80)
+                , Css.width (pct 80)
+                , overflow auto
+                ]
+            ]
+            [ text "Welcome to Threads of Martial Destiny, a combat tracker for "
+            , a [ href "http://theonyxpath.com/category/worlds/exalted/" ]
+                [ text "Exalted 3rd Edition" ]
+            , ". The app saves its state regularly so don't worry if you "
+                ++ "close or refresh the tab, you can pick up where you left "
+                ++ "off. Here's a list of the buttons and what a description of "
+                ++ "what they do:"
+                |> text
+            , Html.Styled.table []
+                [ iconDescription
+                    "imgs/add.svg"
+                    "Adds a new combatant to the combat."
+                , iconDescription
+                    "imgs/new-combat.svg"
+                    "Starts a new combat deleting the current session."
+                , iconDescription
+                    "imgs/end-round.svg"
+                    ("Ends the current round of combat, indicating that all "
+                        ++ "combatants have made taken actions."
+                    )
+                , iconDescription
+                    "imgs/edit.svg"
+                    "Edits the combatants initiative value."
+                , iconDescription
+                    "imgs/withered-flower.svg"
+                    "Initiates a withering attack (the icon is a withered flower)."
+                , iconDescription
+                    "imgs/sword.svg"
+                    "Initiates a decisive attack."
+                , iconDescription
+                    "imgs/reset.svg"
+                    "Edits the combatants onslaught value."
+                , iconDescription
+                    "imgs/end-turn.svg"
+                    ("Ends the combatants turn, indicating that they have taken "
+                        ++ "all their actions."
+                    )
+                , iconDescription
+                    "imgs/delete.svg"
+                    "Deletes the combatant."
+                ]
+            , "If you find any bugs or have any feature requests please add "
+                ++ "an issue on "
+                |> text
+            , a
+                [ href
+                    "https://github.com/ChrisWellsWood/martial-destiny/issues"
+                ]
+                [ text "GitHub" ]
+            , text " or, even better, send me a pull request!"
+            , styledHR [] []
+            , styledButton [ onClick ClosePopUp ] [ text "Close" ]
+            ]
+        ]
+
+
+iconDescription : String -> String -> Html msg
+iconDescription iconPath description =
+    tr []
+        [ td []
+            [ img
+                [ css [ iconStyle True ]
+                , src iconPath
+                ]
+                []
+            ]
+        , td [] [ text description ]
         ]
 
 

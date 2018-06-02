@@ -667,8 +667,10 @@ view model =
         , footer [ css [ footerStyle ] ]
             [ text
                 ("© Chris Wells Wood, 2018. Version 1.0.0. "
-                    ++ "Exalted is © White Wolf AB and Onyx Path."
+                    ++ "Exalted is © White Wolf AB and Onyx Path. "
                 )
+            , a [ href "https://github.com/ChrisWellsWood/martial-destiny" ]
+                [ text "Source code." ]
             , br [] []
             , text "Icons made by "
             , a
@@ -817,7 +819,7 @@ combatantCard numCombatants combatant =
                         Just crash ->
                             [ br [] []
                             , text
-                                ("Crash:"
+                                ("Crash: "
                                     ++ (toString crash.turnsUntilReset)
                                 )
                             ]

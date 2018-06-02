@@ -90,6 +90,7 @@ type PopUp
     | EditInitiative Combatant String
     | WitheringAttack Combatant (Maybe Combatant) (Maybe String) (Maybe Shift)
     | DecisiveAttack Combatant
+    | EditOnslaught Combatant String
     | Confirm String Msg
     | Closed
 
@@ -127,7 +128,9 @@ type Msg
     | SetShiftJoinCombat String
     | ResolveInitiativeShift
     | ResolveDecisive AttackOutcome
-    | ResetOnslaught Combatant
+    | ModifyOnslaught Int
+    | SetOnslaught String
+    | ApplyNewOnslaught
     | EndTurn Combatant
     | ResolveDelete Combatant
 
@@ -423,22 +426,60 @@ update msg model =
                 _ ->
                     { model | popUp = Closed } ! []
 
-        ResetOnslaught combatant ->
-            let
-                updatedCombatant =
-                    { combatant | onslaught = 0 }
-
-                updatedCombatants =
-                    Dict.insert
-                        updatedCombatant.name
-                        updatedCombatant
-                        model.combatants
-            in
-                update Save
+        ModifyOnslaught modifyBy ->
+            case model.popUp of
+                EditOnslaught combatant onslaughtString ->
                     { model
-                        | combatants = updatedCombatants
-                        , popUp = Closed
+                        | popUp =
+                            EditOnslaught
+                                combatant
+                                (String.toInt onslaughtString
+                                    |> Result.withDefault 0
+                                    |> (+) modifyBy
+                                    |> toString
+                                )
                     }
+                        ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
+
+        SetOnslaught onslaughtString ->
+            case model.popUp of
+                EditOnslaught combatant _ ->
+                    { model
+                        | popUp =
+                            EditOnslaught
+                                combatant
+                                onslaughtString
+                    }
+                        ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
+
+        ApplyNewOnslaught ->
+            case model.popUp of
+                EditOnslaught combatant newOnslaughtStr ->
+                    case String.toInt newOnslaughtStr of
+                        Ok newOnslaught ->
+                            update Save
+                                { model
+                                    | popUp = Closed
+                                    , combatants =
+                                        Dict.insert
+                                            combatant.name
+                                            { combatant
+                                                | onslaught = newOnslaught
+                                            }
+                                            model.combatants
+                                }
+
+                        Err _ ->
+                            { model | popUp = Closed } ! []
+
+                _ ->
+                    { model | popUp = Closed } ! []
 
         EndTurn combatant ->
             let
@@ -644,7 +685,7 @@ view model =
                             [ newCombatantPopUp newCombatant ]
 
                         (EditInitiative _ _) as editInitiative ->
-                            [ editPopUp editInitiative ]
+                            [ editInitiativePopUp editInitiative ]
 
                         (WitheringAttack _ _ _ _) as witheringAttack ->
                             [ witheringPopUp
@@ -655,6 +696,9 @@ view model =
                         (DecisiveAttack _) as decisiveAttack ->
                             [ decisivePopUp decisiveAttack
                             ]
+
+                        (EditOnslaught _ _) as editOnslaught ->
+                            [ editOnslaughtPopUp editOnslaught ]
 
                         (Confirm _ _) as confirm ->
                             [ confirmPopUp confirm
@@ -770,7 +814,7 @@ tracker round combatants =
 combatantCard : Int -> Combatant -> Html Msg
 combatantCard numCombatants combatant =
     let
-        { name, initiative, turnFinished } =
+        { name, initiative, onslaught, turnFinished } =
             combatant
 
         attacksActive =
@@ -807,7 +851,7 @@ combatantCard numCombatants combatant =
                     , onClick <|
                         OpenPopUp <|
                             EditInitiative combatant (toString initiative)
-                    , title "Edit"
+                    , title "Edit Initiative"
                     ]
                     []
                 ]
@@ -853,15 +897,16 @@ combatantCard numCombatants combatant =
                     ]
                     [ text "Decisive" ]
                 , img
-                    [ css [ iconStyle True ]
+                    [ src "imgs/reset.svg"
+                    , css
+                        [ iconStyle True
+                        ]
                     , onClick <|
                         OpenPopUp <|
-                            Confirm "Reset Onslaught" <|
-                                ResetOnslaught combatant
-                    , src "imgs/reset.svg"
-                    , title "Reset Onslaught"
+                            EditOnslaught combatant (toString onslaught)
+                    , title "Edit Onslaught"
                     ]
-                    [ text "Reset Onslaught" ]
+                    []
                 , img
                     [ css [ iconStyle True ]
                     , onClick <|
@@ -938,8 +983,8 @@ newCombatantPopUp newCombatant =
         ]
 
 
-editPopUp : PopUp -> Html Msg
-editPopUp editInitiative =
+editInitiativePopUp : PopUp -> Html Msg
+editInitiativePopUp editInitiative =
     let
         modifyInitiativeBtn modifyBy =
             styledButton
@@ -1109,6 +1154,61 @@ decisivePopUp popUp =
                 ++ [ styledButton [ onClick ClosePopUp ] [ text "Cancel" ] ]
             )
         ]
+
+
+editOnslaughtPopUp : PopUp -> Html Msg
+editOnslaughtPopUp editOnslaught =
+    let
+        modifyOnslaughtBtn modifyBy =
+            styledButton
+                [ onClick <|
+                    ModifyOnslaught modifyBy
+                ]
+                [ text <| toString modifyBy ]
+    in
+        div []
+            [ disablingDiv
+            , div [ css [ popUpStyle ] ]
+                ((case editOnslaught of
+                    EditOnslaught combatant newOnslaught ->
+                        let
+                            resolveDisabled =
+                                case String.toInt newOnslaught of
+                                    Ok _ ->
+                                        False
+
+                                    Err _ ->
+                                        True
+                        in
+                            [ b [] [ text "Edit Onslaught" ]
+                            , br [] []
+                            , modifyOnslaughtBtn -5
+                            , modifyOnslaughtBtn -1
+                            , styledInput
+                                [ id "pop-up-focus"
+                                , onInput SetOnslaught
+                                , value newOnslaught
+                                , size 3
+                                ]
+                                []
+                            , modifyOnslaughtBtn 1
+                            , modifyOnslaughtBtn 5
+                            , styledHR [] []
+                            , styledButton
+                                [ onClick <| ApplyNewOnslaught
+                                , Html.Styled.Attributes.disabled resolveDisabled
+                                , title "Edit"
+                                ]
+                                [ text "Ok" ]
+                            ]
+
+                    _ ->
+                        []
+                 )
+                    ++ [ styledButton [ onClick ClosePopUp ] [ text "Cancel" ]
+                       ]
+                )
+            ]
 
 
 confirmPopUp : PopUp -> Html Msg

@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Css exposing (..)
 import Dict
@@ -10,9 +10,9 @@ import Html.Styled.Events exposing (..)
 import Task
 
 
-main : Program Never Model Msg
+main : Program (Maybe ExportedModel) Model Msg
 main =
-    Html.program
+    Html.programWithFlags
         { init = init
         , view = view >> toUnstyled
         , update = update
@@ -20,9 +20,14 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    emptyModel ! []
+init : Maybe ExportedModel -> ( Model, Cmd Msg )
+init savedSession =
+    case savedSession of
+        Just exportedModel ->
+            (importModel exportedModel) ! []
+
+        Nothing ->
+            emptyModel ! []
 
 
 type alias Model =
@@ -37,6 +42,27 @@ emptyModel =
     Model
         Dict.empty
         1
+        Closed
+
+
+type alias ExportedModel =
+    { combatants : List ( String, Combatant )
+    , round : Int
+    }
+
+
+exportModel : Model -> ExportedModel
+exportModel model =
+    ExportedModel
+        (Dict.toList model.combatants)
+        model.round
+
+
+importModel : ExportedModel -> Model
+importModel exportedModel =
+    Model
+        (Dict.fromList exportedModel.combatants)
+        exportedModel.round
         Closed
 
 
@@ -89,6 +115,7 @@ type Msg
     | SetCombatantName String
     | SetJoinCombat String
     | AddNewCombatant
+    | Save
     | NewCombat
     | StartNewRound
     | ModifyInitiative Int
@@ -177,17 +204,20 @@ update msg model =
                         updatedCombatants =
                             Dict.insert name newCombatant model.combatants
                     in
-                        { model
-                            | popUp = Closed
-                            , combatants = updatedCombatants
-                        }
-                            ! []
+                        update Save
+                            { model
+                                | popUp = Closed
+                                , combatants = updatedCombatants
+                            }
 
                 _ ->
                     { model | popUp = Closed } ! []
 
+        Save ->
+            model ! [ exportModel model |> saveState ]
+
         NewCombat ->
-            emptyModel ! []
+            update Save emptyModel
 
         StartNewRound ->
             let
@@ -198,12 +228,12 @@ update msg model =
                         |> List.map (\c -> ( c.name, c ))
                         |> Dict.fromList
             in
-                { model
-                    | combatants = updatedCombatants
-                    , round = model.round + 1
-                    , popUp = Closed
-                }
-                    ! []
+                update Save
+                    { model
+                        | combatants = updatedCombatants
+                        , round = model.round + 1
+                        , popUp = Closed
+                    }
 
         ModifyInitiative modifyBy ->
             case model.popUp of
@@ -242,17 +272,17 @@ update msg model =
                 EditInitiative combatant newInitiativeStr ->
                     case String.toInt newInitiativeStr of
                         Ok newInitiative ->
-                            { model
-                                | popUp = Closed
-                                , combatants =
-                                    Dict.insert
-                                        combatant.name
-                                        { combatant
-                                            | initiative = newInitiative
-                                        }
-                                        model.combatants
-                            }
-                                ! []
+                            update Save
+                                { model
+                                    | popUp = Closed
+                                    , combatants =
+                                        Dict.insert
+                                            combatant.name
+                                            { combatant
+                                                | initiative = newInitiative
+                                            }
+                                            model.combatants
+                                }
 
                         Err _ ->
                             { model | popUp = Closed } ! []
@@ -316,11 +346,11 @@ update msg model =
                                     ! []
 
                             NoShift ->
-                                { model
-                                    | popUp = Closed
-                                    , combatants = updatedCombatants
-                                }
-                                    ! []
+                                update Save
+                                    { model
+                                        | popUp = Closed
+                                        , combatants = updatedCombatants
+                                    }
 
                 _ ->
                     { model | popUp = Closed } ! []
@@ -365,11 +395,11 @@ update msg model =
                             Dict.insert attacker.name attacker model.combatants
                                 |> Dict.insert def.name def
                     in
-                        { model
-                            | popUp = Closed
-                            , combatants = updatedCombatants
-                        }
-                            ! []
+                        update Save
+                            { model
+                                | popUp = Closed
+                                , combatants = updatedCombatants
+                            }
 
                 _ ->
                     { model | popUp = Closed } ! []
@@ -384,11 +414,11 @@ update msg model =
                         updatedCombatants =
                             Dict.insert attacker.name attacker model.combatants
                     in
-                        { model
-                            | popUp = Closed
-                            , combatants = updatedCombatants
-                        }
-                            ! []
+                        update Save
+                            { model
+                                | popUp = Closed
+                                , combatants = updatedCombatants
+                            }
 
                 _ ->
                     { model | popUp = Closed } ! []
@@ -404,11 +434,11 @@ update msg model =
                         updatedCombatant
                         model.combatants
             in
-                { model
-                    | combatants = updatedCombatants
-                    , popUp = Closed
-                }
-                    ! []
+                update Save
+                    { model
+                        | combatants = updatedCombatants
+                        , popUp = Closed
+                    }
 
         EndTurn combatant ->
             let
@@ -421,11 +451,11 @@ update msg model =
                         updatedCombatant
                         model.combatants
             in
-                { model
-                    | combatants = updatedCombatants
-                    , popUp = Closed
-                }
-                    ! []
+                update Save
+                    { model
+                        | combatants = updatedCombatants
+                        , popUp = Closed
+                    }
 
         ResolveDelete combatant ->
             let
@@ -434,11 +464,11 @@ update msg model =
                         combatant.name
                         model.combatants
             in
-                { model
-                    | combatants = updatedCombatants
-                    , popUp = Closed
-                }
-                    ! []
+                update Save
+                    { model
+                        | combatants = updatedCombatants
+                        , popUp = Closed
+                    }
 
 
 sortByInitiative : Combatants -> Combatants
@@ -555,6 +585,13 @@ resolveDecisive outcome combatant =
 
 
 
+-- Ports
+
+
+port saveState : ExportedModel -> Cmd msg
+
+
+
 -- Subscriptions
 
 
@@ -628,7 +665,10 @@ view model =
                    )
             )
         , footer [ css [ footerStyle ] ]
-            [ text "© Chris Wells Wood, 2018. Exalted is © White Wolf AB and Onyx Path."
+            [ text
+                ("© Chris Wells Wood, 2018. Version 1.0.0. "
+                    ++ "Exalted is © White Wolf AB and Onyx Path."
+                )
             , br [] []
             , text "Icons made by "
             , a
@@ -666,7 +706,7 @@ view model =
                 , title "Flaticon"
                 ]
                 [ text "www.flaticon.com" ]
-            , text " is licensed by "
+            , text " and are licensed by "
             , a
                 [ href "http://creativecommons.org/licenses/by/3.0/"
                 , title "Creative Commons BY 3.0"
@@ -790,7 +830,7 @@ combatantCard numCombatants combatant =
                 [ img
                     ([ css [ iconStyle attacksActive ]
                      , src "imgs/withered-flower.svg"
-                     , title "Withering attack"
+                     , title "Withering Attack"
                      ]
                         ++ if attacksActive then
                             [ onClick <|
@@ -1128,9 +1168,12 @@ colourPallette =
 defaultStyle : Style
 defaultStyle =
     Css.batch
-        [ fontFamilies [ "Tahoma", "Geneva", "sans-serif" ]
+        [ displayFlex
+        , flexDirection column
+        , fontFamilies [ "Tahoma", "Geneva", "sans-serif" ]
         , fontSize (px 18)
         , Css.height (pct 100)
+        , justifyContent spaceBetween
         , Css.width (pct 100)
         , position absolute
         , top (px 0)
@@ -1238,6 +1281,7 @@ bodyStyle =
         [ backgroundColor colourPallette.backgroundColor
         , Css.width (pct 100)
         , Css.height (pct 100)
+        , overflow auto
         ]
 
 
@@ -1247,8 +1291,6 @@ footerStyle =
         [ borderWidth4 (px 2) (px 0) (px 0) (px 0)
         , borderStyle solid
         , borderColor <| hex "000000"
-        , position absolute
-        , bottom (px 0)
         , Css.width (pct 100)
         , fontSize (px 12)
         , color <| hex "aaaaaa"

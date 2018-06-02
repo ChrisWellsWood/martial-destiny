@@ -15245,6 +15245,51 @@ var _user$project$Main$popUpStyle = _rtfeldman$elm_css$Css$batch(
 			}
 		}
 	});
+var _user$project$Main$iconDescription = F2(
+	function (iconPath, description) {
+		return A2(
+			_rtfeldman$elm_css$Html_Styled$tr,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_rtfeldman$elm_css$Html_Styled$td,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_rtfeldman$elm_css$Html_Styled$img,
+							{
+								ctor: '::',
+								_0: _rtfeldman$elm_css$Html_Styled_Attributes$css(
+									{
+										ctor: '::',
+										_0: _user$project$Main$iconStyle(true),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: _rtfeldman$elm_css$Html_Styled_Attributes$src(iconPath),
+									_1: {ctor: '[]'}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_rtfeldman$elm_css$Html_Styled$td,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _rtfeldman$elm_css$Html_Styled$text(description),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			});
+	});
 var _user$project$Main$disablingDiv = A2(
 	_rtfeldman$elm_css$Html_Styled$div,
 	{
@@ -15376,9 +15421,14 @@ var _user$project$Main$init = function (savedSession) {
 			{ctor: '[]'});
 	}
 };
+var _user$project$Main$Help = {ctor: 'Help'};
 var _user$project$Main$Confirm = F2(
 	function (a, b) {
 		return {ctor: 'Confirm', _0: a, _1: b};
+	});
+var _user$project$Main$EditOnslaught = F2(
+	function (a, b) {
+		return {ctor: 'EditOnslaught', _0: a, _1: b};
 	});
 var _user$project$Main$DecisiveAttack = function (a) {
 	return {ctor: 'DecisiveAttack', _0: a};
@@ -15442,8 +15492,12 @@ var _user$project$Main$ResolveDelete = function (a) {
 var _user$project$Main$EndTurn = function (a) {
 	return {ctor: 'EndTurn', _0: a};
 };
-var _user$project$Main$ResetOnslaught = function (a) {
-	return {ctor: 'ResetOnslaught', _0: a};
+var _user$project$Main$ApplyNewOnslaught = {ctor: 'ApplyNewOnslaught'};
+var _user$project$Main$SetOnslaught = function (a) {
+	return {ctor: 'SetOnslaught', _0: a};
+};
+var _user$project$Main$ModifyOnslaught = function (a) {
+	return {ctor: 'ModifyOnslaught', _0: a};
 };
 var _user$project$Main$ResolveDecisive = function (a) {
 	return {ctor: 'ResolveDecisive', _0: a};
@@ -15649,7 +15703,7 @@ var _user$project$Main$newCombatantPopUp = function (newCombatant) {
 			}
 		});
 };
-var _user$project$Main$editPopUp = function (editInitiative) {
+var _user$project$Main$editInitiativePopUp = function (editInitiative) {
 	var modifyInitiativeBtn = function (modifyBy) {
 		return A2(
 			_user$project$Main$styledButton,
@@ -16225,6 +16279,169 @@ var _user$project$Main$decisivePopUp = function (popUp) {
 			}
 		});
 };
+var _user$project$Main$editOnslaughtPopUp = function (editOnslaught) {
+	var modifyOnslaughtBtn = function (modifyBy) {
+		return A2(
+			_user$project$Main$styledButton,
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(
+					_user$project$Main$ModifyOnslaught(modifyBy)),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _rtfeldman$elm_css$Html_Styled$text(
+					_elm_lang$core$Basics$toString(modifyBy)),
+				_1: {ctor: '[]'}
+			});
+	};
+	return A2(
+		_rtfeldman$elm_css$Html_Styled$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _user$project$Main$disablingDiv,
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_rtfeldman$elm_css$Html_Styled$div,
+					{
+						ctor: '::',
+						_0: _rtfeldman$elm_css$Html_Styled_Attributes$css(
+							{
+								ctor: '::',
+								_0: _user$project$Main$popUpStyle,
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					},
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						function () {
+							var _p21 = editOnslaught;
+							if (_p21.ctor === 'EditOnslaught') {
+								var _p23 = _p21._1;
+								var resolveDisabled = function () {
+									var _p22 = _elm_lang$core$String$toInt(_p23);
+									if (_p22.ctor === 'Ok') {
+										return false;
+									} else {
+										return true;
+									}
+								}();
+								return {
+									ctor: '::',
+									_0: A2(
+										_rtfeldman$elm_css$Html_Styled$b,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _rtfeldman$elm_css$Html_Styled$text('Edit Onslaught'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rtfeldman$elm_css$Html_Styled$br,
+											{ctor: '[]'},
+											{ctor: '[]'}),
+										_1: {
+											ctor: '::',
+											_0: modifyOnslaughtBtn(-5),
+											_1: {
+												ctor: '::',
+												_0: modifyOnslaughtBtn(-1),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_user$project$Main$styledInput,
+														{
+															ctor: '::',
+															_0: _rtfeldman$elm_css$Html_Styled_Attributes$id('pop-up-focus'),
+															_1: {
+																ctor: '::',
+																_0: _rtfeldman$elm_css$Html_Styled_Events$onInput(_user$project$Main$SetOnslaught),
+																_1: {
+																	ctor: '::',
+																	_0: _rtfeldman$elm_css$Html_Styled_Attributes$value(_p23),
+																	_1: {
+																		ctor: '::',
+																		_0: _rtfeldman$elm_css$Html_Styled_Attributes$size(3),
+																		_1: {ctor: '[]'}
+																	}
+																}
+															}
+														},
+														{ctor: '[]'}),
+													_1: {
+														ctor: '::',
+														_0: modifyOnslaughtBtn(1),
+														_1: {
+															ctor: '::',
+															_0: modifyOnslaughtBtn(5),
+															_1: {
+																ctor: '::',
+																_0: A2(
+																	_user$project$Main$styledHR,
+																	{ctor: '[]'},
+																	{ctor: '[]'}),
+																_1: {
+																	ctor: '::',
+																	_0: A2(
+																		_user$project$Main$styledButton,
+																		{
+																			ctor: '::',
+																			_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(_user$project$Main$ApplyNewOnslaught),
+																			_1: {
+																				ctor: '::',
+																				_0: _rtfeldman$elm_css$Html_Styled_Attributes$disabled(resolveDisabled),
+																				_1: {
+																					ctor: '::',
+																					_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Edit'),
+																					_1: {ctor: '[]'}
+																				}
+																			}
+																		},
+																		{
+																			ctor: '::',
+																			_0: _rtfeldman$elm_css$Html_Styled$text('Ok'),
+																			_1: {ctor: '[]'}
+																		}),
+																	_1: {ctor: '[]'}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								};
+							} else {
+								return {ctor: '[]'};
+							}
+						}(),
+						{
+							ctor: '::',
+							_0: A2(
+								_user$project$Main$styledButton,
+								{
+									ctor: '::',
+									_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(_user$project$Main$ClosePopUp),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _rtfeldman$elm_css$Html_Styled$text('Cancel'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						})),
+				_1: {ctor: '[]'}
+			}
+		});
+};
 var _user$project$Main$confirmPopUp = function (popUp) {
 	return A2(
 		_rtfeldman$elm_css$Html_Styled$div,
@@ -16249,8 +16466,8 @@ var _user$project$Main$confirmPopUp = function (popUp) {
 					A2(
 						_elm_lang$core$Basics_ops['++'],
 						function () {
-							var _p21 = popUp;
-							if (_p21.ctor === 'Confirm') {
+							var _p24 = popUp;
+							if (_p24.ctor === 'Confirm') {
 								return {
 									ctor: '::',
 									_0: A2(
@@ -16258,7 +16475,7 @@ var _user$project$Main$confirmPopUp = function (popUp) {
 										{ctor: '[]'},
 										{
 											ctor: '::',
-											_0: _rtfeldman$elm_css$Html_Styled$text(_p21._0),
+											_0: _rtfeldman$elm_css$Html_Styled$text(_p24._0),
 											_1: {ctor: '[]'}
 										}),
 									_1: {
@@ -16282,7 +16499,7 @@ var _user$project$Main$confirmPopUp = function (popUp) {
 														_user$project$Main$styledButton,
 														{
 															ctor: '::',
-															_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(_p21._1),
+															_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(_p24._1),
 															_1: {ctor: '[]'}
 														},
 														{
@@ -16320,6 +16537,169 @@ var _user$project$Main$confirmPopUp = function (popUp) {
 			}
 		});
 };
+var _user$project$Main$helpPopUp = A2(
+	_rtfeldman$elm_css$Html_Styled$div,
+	{ctor: '[]'},
+	{
+		ctor: '::',
+		_0: _user$project$Main$disablingDiv,
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_rtfeldman$elm_css$Html_Styled$div,
+				{
+					ctor: '::',
+					_0: _rtfeldman$elm_css$Html_Styled_Attributes$css(
+						{
+							ctor: '::',
+							_0: _user$project$Main$popUpStyle,
+							_1: {
+								ctor: '::',
+								_0: _rtfeldman$elm_css$Css$maxHeight(
+									_rtfeldman$elm_css$Css$pct(80)),
+								_1: {
+									ctor: '::',
+									_0: _rtfeldman$elm_css$Css$width(
+										_rtfeldman$elm_css$Css$pct(80)),
+									_1: {
+										ctor: '::',
+										_0: _rtfeldman$elm_css$Css$overflow(_rtfeldman$elm_css$Css$auto),
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _rtfeldman$elm_css$Html_Styled$text('Welcome to Threads of Martial Destiny, a combat tracker for '),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_rtfeldman$elm_css$Html_Styled$a,
+							{
+								ctor: '::',
+								_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('http://theonyxpath.com/category/worlds/exalted/'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _rtfeldman$elm_css$Html_Styled$text('Exalted 3rd Edition'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: _rtfeldman$elm_css$Html_Styled$text(
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'. The app saves its state regularly so don\'t worry if you ',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										'close or refresh the tab, you can pick up where you left ',
+										A2(_elm_lang$core$Basics_ops['++'], 'off. Here\'s a list of the buttons and what a description of ', 'what they do:')))),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_rtfeldman$elm_css$Html_Styled$table,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: A2(_user$project$Main$iconDescription, 'imgs/add.svg', 'Adds a new combatant to the combat.'),
+										_1: {
+											ctor: '::',
+											_0: A2(_user$project$Main$iconDescription, 'imgs/new-combat.svg', 'Starts a new combat deleting the current session.'),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_user$project$Main$iconDescription,
+													'imgs/end-round.svg',
+													A2(_elm_lang$core$Basics_ops['++'], 'Ends the current round of combat, indicating that all ', 'combatants have made taken actions.')),
+												_1: {
+													ctor: '::',
+													_0: A2(_user$project$Main$iconDescription, 'imgs/edit.svg', 'Edits the combatants initiative value.'),
+													_1: {
+														ctor: '::',
+														_0: A2(_user$project$Main$iconDescription, 'imgs/withered-flower.svg', 'Initiates a withering attack (the icon is a withered flower).'),
+														_1: {
+															ctor: '::',
+															_0: A2(_user$project$Main$iconDescription, 'imgs/sword.svg', 'Initiates a decisive attack.'),
+															_1: {
+																ctor: '::',
+																_0: A2(_user$project$Main$iconDescription, 'imgs/reset.svg', 'Edits the combatants onslaught value.'),
+																_1: {
+																	ctor: '::',
+																	_0: A2(
+																		_user$project$Main$iconDescription,
+																		'imgs/end-turn.svg',
+																		A2(_elm_lang$core$Basics_ops['++'], 'Ends the combatants turn, indicating that they have taken ', 'all their actions.')),
+																	_1: {
+																		ctor: '::',
+																		_0: A2(_user$project$Main$iconDescription, 'imgs/delete.svg', 'Deletes the combatant.'),
+																		_1: {ctor: '[]'}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}),
+								_1: {
+									ctor: '::',
+									_0: _rtfeldman$elm_css$Html_Styled$text(
+										A2(_elm_lang$core$Basics_ops['++'], 'If you find any bugs or have any feature requests please add ', 'an issue on ')),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rtfeldman$elm_css$Html_Styled$a,
+											{
+												ctor: '::',
+												_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://github.com/ChrisWellsWood/martial-destiny/issues'),
+												_1: {ctor: '[]'}
+											},
+											{
+												ctor: '::',
+												_0: _rtfeldman$elm_css$Html_Styled$text('GitHub'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {
+											ctor: '::',
+											_0: _rtfeldman$elm_css$Html_Styled$text(' or, even better, send me a pull request!'),
+											_1: {
+												ctor: '::',
+												_0: A2(
+													_user$project$Main$styledHR,
+													{ctor: '[]'},
+													{ctor: '[]'}),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_user$project$Main$styledButton,
+														{
+															ctor: '::',
+															_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(_user$project$Main$ClosePopUp),
+															_1: {ctor: '[]'}
+														},
+														{
+															ctor: '::',
+															_0: _rtfeldman$elm_css$Html_Styled$text('Close'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}),
+			_1: {ctor: '[]'}
+		}
+	});
 var _user$project$Main$FocusResult = function (a) {
 	return {ctor: 'FocusResult', _0: a};
 };
@@ -16327,14 +16707,14 @@ var _user$project$Main$update = F2(
 	function (msg, model) {
 		update:
 		while (true) {
-			var _p22 = msg;
-			switch (_p22.ctor) {
+			var _p25 = msg;
+			switch (_p25.ctor) {
 				case 'OpenPopUp':
 					return A2(
 						_elm_lang$core$Platform_Cmd_ops['!'],
 						_elm_lang$core$Native_Utils.update(
 							model,
-							{popUp: _p22._0}),
+							{popUp: _p25._0}),
 						{
 							ctor: '::',
 							_0: A2(
@@ -16344,12 +16724,12 @@ var _user$project$Main$update = F2(
 							_1: {ctor: '[]'}
 						});
 				case 'FocusResult':
-					var _p23 = _p22._0;
-					if (_p23.ctor === 'Err') {
+					var _p26 = _p25._0;
+					if (_p26.ctor === 'Err') {
 						var error = A2(
 							_elm_lang$core$Basics_ops['++'],
 							'ID \"',
-							A2(_elm_lang$core$Basics_ops['++'], _p23._0._0, '\"not found.'));
+							A2(_elm_lang$core$Basics_ops['++'], _p26._0._0, '\"not found.'));
 						return A2(
 							_elm_lang$core$Platform_Cmd_ops['!'],
 							model,
@@ -16368,14 +16748,14 @@ var _user$project$Main$update = F2(
 							{popUp: _user$project$Main$Closed}),
 						{ctor: '[]'});
 				case 'SetCombatantName':
-					var _p24 = model.popUp;
-					if (_p24.ctor === 'NewCombatant') {
+					var _p27 = model.popUp;
+					if (_p27.ctor === 'NewCombatant') {
 						return A2(
 							_elm_lang$core$Platform_Cmd_ops['!'],
 							_elm_lang$core$Native_Utils.update(
 								model,
 								{
-									popUp: A2(_user$project$Main$NewCombatant, _p22._0, _p24._1)
+									popUp: A2(_user$project$Main$NewCombatant, _p25._0, _p27._1)
 								}),
 							{ctor: '[]'});
 					} else {
@@ -16387,14 +16767,14 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'SetJoinCombat':
-					var _p25 = model.popUp;
-					if (_p25.ctor === 'NewCombatant') {
+					var _p28 = model.popUp;
+					if (_p28.ctor === 'NewCombatant') {
 						return A2(
 							_elm_lang$core$Platform_Cmd_ops['!'],
 							_elm_lang$core$Native_Utils.update(
 								model,
 								{
-									popUp: A2(_user$project$Main$NewCombatant, _p25._0, _p22._0)
+									popUp: A2(_user$project$Main$NewCombatant, _p28._0, _p25._0)
 								}),
 							{ctor: '[]'});
 					} else {
@@ -16406,9 +16786,9 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'AddNewCombatant':
-					var _p26 = model.popUp;
-					if (_p26.ctor === 'NewCombatant') {
-						var _p27 = _p26._0;
+					var _p29 = model.popUp;
+					if (_p29.ctor === 'NewCombatant') {
+						var _p30 = _p29._0;
 						var joinCombat = A2(
 							F2(
 								function (x, y) {
@@ -16418,15 +16798,15 @@ var _user$project$Main$update = F2(
 							A2(
 								_elm_lang$core$Result$withDefault,
 								0,
-								_elm_lang$core$String$toInt(_p26._1)));
-						var newCombatant = A5(_user$project$Main$Combatant, _p27, joinCombat, _elm_lang$core$Maybe$Nothing, 0, false);
-						var updatedCombatants = A3(_elm_lang$core$Dict$insert, _p27, newCombatant, model.combatants);
-						var _v21 = _user$project$Main$Save,
-							_v22 = _elm_lang$core$Native_Utils.update(
+								_elm_lang$core$String$toInt(_p29._1)));
+						var newCombatant = A5(_user$project$Main$Combatant, _p30, joinCombat, _elm_lang$core$Maybe$Nothing, 0, false);
+						var updatedCombatants = A3(_elm_lang$core$Dict$insert, _p30, newCombatant, model.combatants);
+						var _v23 = _user$project$Main$Save,
+							_v24 = _elm_lang$core$Native_Utils.update(
 							model,
 							{popUp: _user$project$Main$Closed, combatants: updatedCombatants});
-						msg = _v21;
-						model = _v22;
+						msg = _v23;
+						model = _v24;
 						continue update;
 					} else {
 						return A2(
@@ -16447,10 +16827,10 @@ var _user$project$Main$update = F2(
 							_1: {ctor: '[]'}
 						});
 				case 'NewCombat':
-					var _v23 = _user$project$Main$Save,
-						_v24 = _user$project$Main$emptyModel;
-					msg = _v23;
-					model = _v24;
+					var _v25 = _user$project$Main$Save,
+						_v26 = _user$project$Main$emptyModel;
+					msg = _v25;
+					model = _v26;
 					continue update;
 				case 'StartNewRound':
 					var updatedCombatants = _elm_lang$core$Dict$fromList(
@@ -16470,16 +16850,16 @@ var _user$project$Main$update = F2(
 									_elm_lang$core$List$map,
 									_user$project$Main$decrementCrash,
 									_elm_lang$core$Dict$values(model.combatants)))));
-					var _v25 = _user$project$Main$Save,
-						_v26 = _elm_lang$core$Native_Utils.update(
+					var _v27 = _user$project$Main$Save,
+						_v28 = _elm_lang$core$Native_Utils.update(
 						model,
 						{combatants: updatedCombatants, round: model.round + 1, popUp: _user$project$Main$Closed});
-					msg = _v25;
-					model = _v26;
+					msg = _v27;
+					model = _v28;
 					continue update;
 				case 'ModifyInitiative':
-					var _p28 = model.popUp;
-					if (_p28.ctor === 'EditInitiative') {
+					var _p31 = model.popUp;
+					if (_p31.ctor === 'EditInitiative') {
 						return A2(
 							_elm_lang$core$Platform_Cmd_ops['!'],
 							_elm_lang$core$Native_Utils.update(
@@ -16487,18 +16867,18 @@ var _user$project$Main$update = F2(
 								{
 									popUp: A2(
 										_user$project$Main$EditInitiative,
-										_p28._0,
+										_p31._0,
 										_elm_lang$core$Basics$toString(
 											A2(
 												F2(
 													function (x, y) {
 														return x + y;
 													}),
-												_p22._0,
+												_p25._0,
 												A2(
 													_elm_lang$core$Result$withDefault,
 													0,
-													_elm_lang$core$String$toInt(_p28._1)))))
+													_elm_lang$core$String$toInt(_p31._1)))))
 								}),
 							{ctor: '[]'});
 					} else {
@@ -16510,14 +16890,14 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'SetInitiative':
-					var _p29 = model.popUp;
-					if (_p29.ctor === 'EditInitiative') {
+					var _p32 = model.popUp;
+					if (_p32.ctor === 'EditInitiative') {
 						return A2(
 							_elm_lang$core$Platform_Cmd_ops['!'],
 							_elm_lang$core$Native_Utils.update(
 								model,
 								{
-									popUp: A2(_user$project$Main$EditInitiative, _p29._0, _p22._0)
+									popUp: A2(_user$project$Main$EditInitiative, _p32._0, _p25._0)
 								}),
 							{ctor: '[]'});
 					} else {
@@ -16529,26 +16909,26 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'ApplyNewInitiative':
-					var _p30 = model.popUp;
-					if (_p30.ctor === 'EditInitiative') {
-						var _p32 = _p30._0;
-						var _p31 = _elm_lang$core$String$toInt(_p30._1);
-						if (_p31.ctor === 'Ok') {
-							var _v31 = _user$project$Main$Save,
-								_v32 = _elm_lang$core$Native_Utils.update(
+					var _p33 = model.popUp;
+					if (_p33.ctor === 'EditInitiative') {
+						var _p35 = _p33._0;
+						var _p34 = _elm_lang$core$String$toInt(_p33._1);
+						if (_p34.ctor === 'Ok') {
+							var _v33 = _user$project$Main$Save,
+								_v34 = _elm_lang$core$Native_Utils.update(
 								model,
 								{
 									popUp: _user$project$Main$Closed,
 									combatants: A3(
 										_elm_lang$core$Dict$insert,
-										_p32.name,
+										_p35.name,
 										_elm_lang$core$Native_Utils.update(
-											_p32,
-											{initiative: _p31._0}),
+											_p35,
+											{initiative: _p34._0}),
 										model.combatants)
 								});
-							msg = _v31;
-							model = _v32;
+							msg = _v33;
+							model = _v34;
 							continue update;
 						} else {
 							return A2(
@@ -16567,8 +16947,8 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'SetWitheringTarget':
-					var _p33 = model.popUp;
-					if (_p33.ctor === 'WitheringAttack') {
+					var _p36 = model.popUp;
+					if (_p36.ctor === 'WitheringAttack') {
 						return A2(
 							_elm_lang$core$Platform_Cmd_ops['!'],
 							_elm_lang$core$Native_Utils.update(
@@ -16576,8 +16956,8 @@ var _user$project$Main$update = F2(
 								{
 									popUp: A4(
 										_user$project$Main$WitheringAttack,
-										_p33._0,
-										_elm_lang$core$Maybe$Just(_p22._0),
+										_p36._0,
+										_elm_lang$core$Maybe$Just(_p25._0),
 										_elm_lang$core$Maybe$Just('0'),
 										_elm_lang$core$Maybe$Nothing)
 								}),
@@ -16591,8 +16971,8 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'SetWitheringDamage':
-					var _p34 = model.popUp;
-					if (((_p34.ctor === 'WitheringAttack') && (_p34._1.ctor === 'Just')) && (_p34._2.ctor === 'Just')) {
+					var _p37 = model.popUp;
+					if (((_p37.ctor === 'WitheringAttack') && (_p37._1.ctor === 'Just')) && (_p37._2.ctor === 'Just')) {
 						return A2(
 							_elm_lang$core$Platform_Cmd_ops['!'],
 							_elm_lang$core$Native_Utils.update(
@@ -16600,9 +16980,9 @@ var _user$project$Main$update = F2(
 								{
 									popUp: A4(
 										_user$project$Main$WitheringAttack,
-										_p34._0,
-										_elm_lang$core$Maybe$Just(_p34._1._0),
-										_elm_lang$core$Maybe$Just(_p22._0),
+										_p37._0,
+										_elm_lang$core$Maybe$Just(_p37._1._0),
+										_elm_lang$core$Maybe$Just(_p25._0),
 										_elm_lang$core$Maybe$Nothing)
 								}),
 							{ctor: '[]'});
@@ -16615,22 +16995,22 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'ResolveWitheringDamage':
-					var _p35 = model.popUp;
-					if ((((_p35.ctor === 'WitheringAttack') && (_p35._1.ctor === 'Just')) && (_p35._2.ctor === 'Just')) && (_p35._3.ctor === 'Nothing')) {
-						var _p40 = _p35._1._0;
-						var _p39 = _p35._2._0;
-						var _p38 = _p35._0;
-						var _p36 = A3(_user$project$Main$resolveWithering, _p38, _p40, _p39);
-						var uAttacker = _p36._0;
-						var uDefender = _p36._1;
-						var shift = _p36._2;
+					var _p38 = model.popUp;
+					if ((((_p38.ctor === 'WitheringAttack') && (_p38._1.ctor === 'Just')) && (_p38._2.ctor === 'Just')) && (_p38._3.ctor === 'Nothing')) {
+						var _p43 = _p38._1._0;
+						var _p42 = _p38._2._0;
+						var _p41 = _p38._0;
+						var _p39 = A3(_user$project$Main$resolveWithering, _p41, _p43, _p42);
+						var uAttacker = _p39._0;
+						var uDefender = _p39._1;
+						var shift = _p39._2;
 						var updatedCombatants = A3(
 							_elm_lang$core$Dict$insert,
-							_p40.name,
+							_p43.name,
 							uDefender,
-							A3(_elm_lang$core$Dict$insert, _p38.name, uAttacker, model.combatants));
-						var _p37 = shift;
-						if (_p37.ctor === 'Shifted') {
+							A3(_elm_lang$core$Dict$insert, _p41.name, uAttacker, model.combatants));
+						var _p40 = shift;
+						if (_p40.ctor === 'Shifted') {
 							return A2(
 								_elm_lang$core$Platform_Cmd_ops['!'],
 								_elm_lang$core$Native_Utils.update(
@@ -16640,17 +17020,17 @@ var _user$project$Main$update = F2(
 											_user$project$Main$WitheringAttack,
 											uAttacker,
 											_elm_lang$core$Maybe$Just(uDefender),
-											_elm_lang$core$Maybe$Just(_p39),
+											_elm_lang$core$Maybe$Just(_p42),
 											_elm_lang$core$Maybe$Just(shift))
 									}),
 								{ctor: '[]'});
 						} else {
-							var _v37 = _user$project$Main$Save,
-								_v38 = _elm_lang$core$Native_Utils.update(
+							var _v39 = _user$project$Main$Save,
+								_v40 = _elm_lang$core$Native_Utils.update(
 								model,
 								{popUp: _user$project$Main$Closed, combatants: updatedCombatants});
-							msg = _v37;
-							model = _v38;
+							msg = _v39;
+							model = _v40;
 							continue update;
 						}
 					} else {
@@ -16662,8 +17042,8 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'SetShiftJoinCombat':
-					var _p41 = model.popUp;
-					if (((((_p41.ctor === 'WitheringAttack') && (_p41._1.ctor === 'Just')) && (_p41._2.ctor === 'Just')) && (_p41._3.ctor === 'Just')) && (_p41._3._0.ctor === 'Shifted')) {
+					var _p44 = model.popUp;
+					if (((((_p44.ctor === 'WitheringAttack') && (_p44._1.ctor === 'Just')) && (_p44._2.ctor === 'Just')) && (_p44._3.ctor === 'Just')) && (_p44._3._0.ctor === 'Shifted')) {
 						return A2(
 							_elm_lang$core$Platform_Cmd_ops['!'],
 							_elm_lang$core$Native_Utils.update(
@@ -16671,11 +17051,11 @@ var _user$project$Main$update = F2(
 								{
 									popUp: A4(
 										_user$project$Main$WitheringAttack,
-										_p41._0,
-										_elm_lang$core$Maybe$Just(_p41._1._0),
-										_elm_lang$core$Maybe$Just(_p41._2._0),
+										_p44._0,
+										_elm_lang$core$Maybe$Just(_p44._1._0),
+										_elm_lang$core$Maybe$Just(_p44._2._0),
 										_elm_lang$core$Maybe$Just(
-											_user$project$Main$Shifted(_p22._0)))
+											_user$project$Main$Shifted(_p25._0)))
 								}),
 							{ctor: '[]'});
 					} else {
@@ -16687,31 +17067,31 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'ResolveInitiativeShift':
-					var _p42 = model.popUp;
-					if (((((_p42.ctor === 'WitheringAttack') && (_p42._1.ctor === 'Just')) && (_p42._2.ctor === 'Just')) && (_p42._3.ctor === 'Just')) && (_p42._3._0.ctor === 'Shifted')) {
-						var _p44 = _p42._1._0;
-						var _p43 = _p42._0;
+					var _p45 = model.popUp;
+					if (((((_p45.ctor === 'WitheringAttack') && (_p45._1.ctor === 'Just')) && (_p45._2.ctor === 'Just')) && (_p45._3.ctor === 'Just')) && (_p45._3._0.ctor === 'Shifted')) {
+						var _p47 = _p45._1._0;
+						var _p46 = _p45._0;
 						var joinCombat = A2(
 							_elm_lang$core$Result$withDefault,
 							0,
-							_elm_lang$core$String$toInt(_p42._3._0._0));
+							_elm_lang$core$String$toInt(_p45._3._0._0));
 						var shiftInitiative = 3 + joinCombat;
 						var attacker = _elm_lang$core$Native_Utils.update(
-							_p43,
+							_p46,
 							{
-								initiative: (_elm_lang$core$Native_Utils.cmp(shiftInitiative, _p43.initiative) > 0) ? shiftInitiative : _p43.initiative
+								initiative: (_elm_lang$core$Native_Utils.cmp(shiftInitiative, _p46.initiative) > 0) ? shiftInitiative : _p46.initiative
 							});
 						var updatedCombatants = A3(
 							_elm_lang$core$Dict$insert,
-							_p44.name,
-							_p44,
+							_p47.name,
+							_p47,
 							A3(_elm_lang$core$Dict$insert, attacker.name, attacker, model.combatants));
-						var _v41 = _user$project$Main$Save,
-							_v42 = _elm_lang$core$Native_Utils.update(
+						var _v43 = _user$project$Main$Save,
+							_v44 = _elm_lang$core$Native_Utils.update(
 							model,
 							{popUp: _user$project$Main$Closed, combatants: updatedCombatants});
-						msg = _v41;
-						model = _v42;
+						msg = _v43;
+						model = _v44;
 						continue update;
 					} else {
 						return A2(
@@ -16722,16 +17102,16 @@ var _user$project$Main$update = F2(
 							{ctor: '[]'});
 					}
 				case 'ResolveDecisive':
-					var _p45 = model.popUp;
-					if (_p45.ctor === 'DecisiveAttack') {
-						var attacker = A2(_user$project$Main$resolveDecisive, _p22._0, _p45._0);
+					var _p48 = model.popUp;
+					if (_p48.ctor === 'DecisiveAttack') {
+						var attacker = A2(_user$project$Main$resolveDecisive, _p25._0, _p48._0);
 						var updatedCombatants = A3(_elm_lang$core$Dict$insert, attacker.name, attacker, model.combatants);
-						var _v44 = _user$project$Main$Save,
-							_v45 = _elm_lang$core$Native_Utils.update(
+						var _v46 = _user$project$Main$Save,
+							_v47 = _elm_lang$core$Native_Utils.update(
 							model,
 							{popUp: _user$project$Main$Closed, combatants: updatedCombatants});
-						msg = _v44;
-						model = _v45;
+						msg = _v46;
+						model = _v47;
 						continue update;
 					} else {
 						return A2(
@@ -16741,38 +17121,115 @@ var _user$project$Main$update = F2(
 								{popUp: _user$project$Main$Closed}),
 							{ctor: '[]'});
 					}
-				case 'ResetOnslaught':
-					var updatedCombatant = _elm_lang$core$Native_Utils.update(
-						_p22._0,
-						{onslaught: 0});
-					var updatedCombatants = A3(_elm_lang$core$Dict$insert, updatedCombatant.name, updatedCombatant, model.combatants);
-					var _v46 = _user$project$Main$Save,
-						_v47 = _elm_lang$core$Native_Utils.update(
-						model,
-						{combatants: updatedCombatants, popUp: _user$project$Main$Closed});
-					msg = _v46;
-					model = _v47;
-					continue update;
+				case 'ModifyOnslaught':
+					var _p49 = model.popUp;
+					if (_p49.ctor === 'EditOnslaught') {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{
+									popUp: A2(
+										_user$project$Main$EditOnslaught,
+										_p49._0,
+										_elm_lang$core$Basics$toString(
+											A2(
+												F2(
+													function (x, y) {
+														return x + y;
+													}),
+												_p25._0,
+												A2(
+													_elm_lang$core$Result$withDefault,
+													0,
+													_elm_lang$core$String$toInt(_p49._1)))))
+								}),
+							{ctor: '[]'});
+					} else {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{popUp: _user$project$Main$Closed}),
+							{ctor: '[]'});
+					}
+				case 'SetOnslaught':
+					var _p50 = model.popUp;
+					if (_p50.ctor === 'EditOnslaught') {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{
+									popUp: A2(_user$project$Main$EditOnslaught, _p50._0, _p25._0)
+								}),
+							{ctor: '[]'});
+					} else {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{popUp: _user$project$Main$Closed}),
+							{ctor: '[]'});
+					}
+				case 'ApplyNewOnslaught':
+					var _p51 = model.popUp;
+					if (_p51.ctor === 'EditOnslaught') {
+						var _p53 = _p51._0;
+						var _p52 = _elm_lang$core$String$toInt(_p51._1);
+						if (_p52.ctor === 'Ok') {
+							var _v52 = _user$project$Main$Save,
+								_v53 = _elm_lang$core$Native_Utils.update(
+								model,
+								{
+									popUp: _user$project$Main$Closed,
+									combatants: A3(
+										_elm_lang$core$Dict$insert,
+										_p53.name,
+										_elm_lang$core$Native_Utils.update(
+											_p53,
+											{onslaught: _p52._0}),
+										model.combatants)
+								});
+							msg = _v52;
+							model = _v53;
+							continue update;
+						} else {
+							return A2(
+								_elm_lang$core$Platform_Cmd_ops['!'],
+								_elm_lang$core$Native_Utils.update(
+									model,
+									{popUp: _user$project$Main$Closed}),
+								{ctor: '[]'});
+						}
+					} else {
+						return A2(
+							_elm_lang$core$Platform_Cmd_ops['!'],
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{popUp: _user$project$Main$Closed}),
+							{ctor: '[]'});
+					}
 				case 'EndTurn':
 					var updatedCombatant = _elm_lang$core$Native_Utils.update(
-						_p22._0,
+						_p25._0,
 						{turnFinished: true});
 					var updatedCombatants = A3(_elm_lang$core$Dict$insert, updatedCombatant.name, updatedCombatant, model.combatants);
-					var _v48 = _user$project$Main$Save,
-						_v49 = _elm_lang$core$Native_Utils.update(
+					var _v54 = _user$project$Main$Save,
+						_v55 = _elm_lang$core$Native_Utils.update(
 						model,
 						{combatants: updatedCombatants, popUp: _user$project$Main$Closed});
-					msg = _v48;
-					model = _v49;
+					msg = _v54;
+					model = _v55;
 					continue update;
 				default:
-					var updatedCombatants = A2(_elm_lang$core$Dict$remove, _p22._0.name, model.combatants);
-					var _v50 = _user$project$Main$Save,
-						_v51 = _elm_lang$core$Native_Utils.update(
+					var updatedCombatants = A2(_elm_lang$core$Dict$remove, _p25._0.name, model.combatants);
+					var _v56 = _user$project$Main$Save,
+						_v57 = _elm_lang$core$Native_Utils.update(
 						model,
 						{combatants: updatedCombatants, popUp: _user$project$Main$Closed});
-					msg = _v50;
-					model = _v51;
+					msg = _v56;
+					model = _v57;
 					continue update;
 			}
 		}
@@ -16783,10 +17240,11 @@ var _user$project$Main$OpenPopUp = function (a) {
 var _user$project$Main$combatantCard = F2(
 	function (numCombatants, combatant) {
 		var attacksActive = (_elm_lang$core$Native_Utils.cmp(numCombatants, 2) < 0) ? false : true;
-		var _p46 = combatant;
-		var name = _p46.name;
-		var initiative = _p46.initiative;
-		var turnFinished = _p46.turnFinished;
+		var _p54 = combatant;
+		var name = _p54.name;
+		var initiative = _p54.initiative;
+		var onslaught = _p54.onslaught;
+		var turnFinished = _p54.turnFinished;
 		var colour = (_elm_lang$core$Native_Utils.cmp(initiative, 1) < 0) ? _user$project$Main$colourPallette.crash : ((_elm_lang$core$Native_Utils.cmp(initiative, 11) < 0) ? _user$project$Main$colourPallette.lowInitiative : _user$project$Main$colourPallette.highInitiative);
 		return A2(
 			_rtfeldman$elm_css$Html_Styled$div,
@@ -16866,7 +17324,7 @@ var _user$project$Main$combatantCard = F2(
 																_elm_lang$core$Basics$toString(initiative)))),
 													_1: {
 														ctor: '::',
-														_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Edit'),
+														_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Edit Initiative'),
 														_1: {ctor: '[]'}
 													}
 												}
@@ -16899,8 +17357,8 @@ var _user$project$Main$combatantCard = F2(
 											_1: {ctor: '[]'}
 										},
 										function () {
-											var _p47 = combatant.crash;
-											if (_p47.ctor === 'Just') {
+											var _p55 = combatant.crash;
+											if (_p55.ctor === 'Just') {
 												return {
 													ctor: '::',
 													_0: A2(
@@ -16912,8 +17370,8 @@ var _user$project$Main$combatantCard = F2(
 														_0: _rtfeldman$elm_css$Html_Styled$text(
 															A2(
 																_elm_lang$core$Basics_ops['++'],
-																'Crash:',
-																_elm_lang$core$Basics$toString(_p47._0.turnsUntilReset))),
+																'Crash: ',
+																_elm_lang$core$Basics$toString(_p55._0.turnsUntilReset))),
 														_1: {ctor: '[]'}
 													}
 												};
@@ -17016,36 +17474,32 @@ var _user$project$Main$combatantCard = F2(
 															_rtfeldman$elm_css$Html_Styled$img,
 															{
 																ctor: '::',
-																_0: _rtfeldman$elm_css$Html_Styled_Attributes$css(
-																	{
-																		ctor: '::',
-																		_0: _user$project$Main$iconStyle(true),
-																		_1: {ctor: '[]'}
-																	}),
+																_0: _rtfeldman$elm_css$Html_Styled_Attributes$src('imgs/reset.svg'),
 																_1: {
 																	ctor: '::',
-																	_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(
-																		_user$project$Main$OpenPopUp(
-																			A2(
-																				_user$project$Main$Confirm,
-																				'Reset Onslaught',
-																				_user$project$Main$ResetOnslaught(combatant)))),
+																	_0: _rtfeldman$elm_css$Html_Styled_Attributes$css(
+																		{
+																			ctor: '::',
+																			_0: _user$project$Main$iconStyle(true),
+																			_1: {ctor: '[]'}
+																		}),
 																	_1: {
 																		ctor: '::',
-																		_0: _rtfeldman$elm_css$Html_Styled_Attributes$src('imgs/reset.svg'),
+																		_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(
+																			_user$project$Main$OpenPopUp(
+																				A2(
+																					_user$project$Main$EditOnslaught,
+																					combatant,
+																					_elm_lang$core$Basics$toString(onslaught)))),
 																		_1: {
 																			ctor: '::',
-																			_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Reset Onslaught'),
+																			_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Edit Onslaught'),
 																			_1: {ctor: '[]'}
 																		}
 																	}
 																}
 															},
-															{
-																ctor: '::',
-																_0: _rtfeldman$elm_css$Html_Styled$text('Reset Onslaught'),
-																_1: {ctor: '[]'}
-															}),
+															{ctor: '[]'}),
 														_1: {
 															ctor: '::',
 															_0: A2(
@@ -17155,10 +17609,10 @@ var _user$project$Main$tracker = F2(
 				},
 				A2(
 					_elm_lang$core$List$filter,
-					function (_p48) {
+					function (_p56) {
 						return !function (_) {
 							return _.turnFinished;
-						}(_p48);
+						}(_p56);
 					},
 					_elm_lang$core$Dict$values(combatants))));
 		return A2(
@@ -17453,15 +17907,14 @@ var _user$project$Main$view = function (model) {
 												}),
 											_1: {
 												ctor: '::',
-												_0: _rtfeldman$elm_css$Html_Styled_Attributes$src('imgs/new-combat.svg'),
+												_0: _rtfeldman$elm_css$Html_Styled_Attributes$src('imgs/help.svg'),
 												_1: {
 													ctor: '::',
 													_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(
-														_user$project$Main$OpenPopUp(
-															A2(_user$project$Main$Confirm, 'New Combat', _user$project$Main$NewCombat))),
+														_user$project$Main$OpenPopUp(_user$project$Main$Help)),
 													_1: {
 														ctor: '::',
-														_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('New Combat'),
+														_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Help'),
 														_1: {ctor: '[]'}
 													}
 												}
@@ -17469,10 +17922,44 @@ var _user$project$Main$view = function (model) {
 										},
 										{
 											ctor: '::',
-											_0: _rtfeldman$elm_css$Html_Styled$text('New Combat'),
+											_0: _rtfeldman$elm_css$Html_Styled$text('Help'),
 											_1: {ctor: '[]'}
 										}),
-									_1: {ctor: '[]'}
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_rtfeldman$elm_css$Html_Styled$img,
+											{
+												ctor: '::',
+												_0: _rtfeldman$elm_css$Html_Styled_Attributes$css(
+													{
+														ctor: '::',
+														_0: _user$project$Main$iconStyle(true),
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: _rtfeldman$elm_css$Html_Styled_Attributes$src('imgs/new-combat.svg'),
+													_1: {
+														ctor: '::',
+														_0: _rtfeldman$elm_css$Html_Styled_Events$onClick(
+															_user$project$Main$OpenPopUp(
+																A2(_user$project$Main$Confirm, 'New Combat', _user$project$Main$NewCombat))),
+														_1: {
+															ctor: '::',
+															_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('New Combat'),
+															_1: {ctor: '[]'}
+														}
+													}
+												}
+											},
+											{
+												ctor: '::',
+												_0: _rtfeldman$elm_css$Html_Styled$text('New Combat'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
 								}
 							}),
 						_1: {ctor: '[]'}
@@ -17500,36 +17987,48 @@ var _user$project$Main$view = function (model) {
 							_1: {ctor: '[]'}
 						},
 						function () {
-							var _p49 = model.popUp;
-							switch (_p49.ctor) {
+							var _p57 = model.popUp;
+							switch (_p57.ctor) {
 								case 'NewCombatant':
 									return {
 										ctor: '::',
-										_0: _user$project$Main$newCombatantPopUp(_p49),
+										_0: _user$project$Main$newCombatantPopUp(_p57),
 										_1: {ctor: '[]'}
 									};
 								case 'EditInitiative':
 									return {
 										ctor: '::',
-										_0: _user$project$Main$editPopUp(_p49),
+										_0: _user$project$Main$editInitiativePopUp(_p57),
 										_1: {ctor: '[]'}
 									};
 								case 'WitheringAttack':
 									return {
 										ctor: '::',
-										_0: A2(_user$project$Main$witheringPopUp, model.combatants, _p49),
+										_0: A2(_user$project$Main$witheringPopUp, model.combatants, _p57),
 										_1: {ctor: '[]'}
 									};
 								case 'DecisiveAttack':
 									return {
 										ctor: '::',
-										_0: _user$project$Main$decisivePopUp(_p49),
+										_0: _user$project$Main$decisivePopUp(_p57),
+										_1: {ctor: '[]'}
+									};
+								case 'EditOnslaught':
+									return {
+										ctor: '::',
+										_0: _user$project$Main$editOnslaughtPopUp(_p57),
 										_1: {ctor: '[]'}
 									};
 								case 'Confirm':
 									return {
 										ctor: '::',
-										_0: _user$project$Main$confirmPopUp(_p49),
+										_0: _user$project$Main$confirmPopUp(_p57),
+										_1: {ctor: '[]'}
+									};
+								case 'Help':
+									return {
+										ctor: '::',
+										_0: _user$project$Main$helpPopUp,
 										_1: {ctor: '[]'}
 									};
 								default:
@@ -17553,165 +18052,180 @@ var _user$project$Main$view = function (model) {
 						{
 							ctor: '::',
 							_0: _rtfeldman$elm_css$Html_Styled$text(
-								A2(_elm_lang$core$Basics_ops['++'], '© Chris Wells Wood, 2018. Version 1.0.0. ', 'Exalted is © White Wolf AB and Onyx Path.')),
+								A2(_elm_lang$core$Basics_ops['++'], '© Chris Wells Wood, 2018. Version 1.0.0. ', 'Exalted is © White Wolf AB and Onyx Path. ')),
 							_1: {
 								ctor: '::',
 								_0: A2(
-									_rtfeldman$elm_css$Html_Styled$br,
-									{ctor: '[]'},
-									{ctor: '[]'}),
+									_rtfeldman$elm_css$Html_Styled$a,
+									{
+										ctor: '::',
+										_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://github.com/ChrisWellsWood/martial-destiny'),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _rtfeldman$elm_css$Html_Styled$text('Source code.'),
+										_1: {ctor: '[]'}
+									}),
 								_1: {
 									ctor: '::',
-									_0: _rtfeldman$elm_css$Html_Styled$text('Icons made by '),
+									_0: A2(
+										_rtfeldman$elm_css$Html_Styled$br,
+										{ctor: '[]'},
+										{ctor: '[]'}),
 									_1: {
 										ctor: '::',
-										_0: A2(
-											_rtfeldman$elm_css$Html_Styled$a,
-											{
-												ctor: '::',
-												_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/authors/appzgear'),
-												_1: {
-													ctor: '::',
-													_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Appzgear'),
-													_1: {ctor: '[]'}
-												}
-											},
-											{
-												ctor: '::',
-												_0: _rtfeldman$elm_css$Html_Styled$text('Appzgear'),
-												_1: {ctor: '[]'}
-											}),
+										_0: _rtfeldman$elm_css$Html_Styled$text('Icons made by '),
 										_1: {
 											ctor: '::',
-											_0: _rtfeldman$elm_css$Html_Styled$text(', '),
-											_1: {
-												ctor: '::',
-												_0: A2(
-													_rtfeldman$elm_css$Html_Styled$a,
-													{
-														ctor: '::',
-														_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/authors/dave-gandy'),
-														_1: {
-															ctor: '::',
-															_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Dave Gandy'),
-															_1: {ctor: '[]'}
-														}
-													},
-													{
-														ctor: '::',
-														_0: _rtfeldman$elm_css$Html_Styled$text('Dave Gandy'),
-														_1: {ctor: '[]'}
-													}),
-												_1: {
+											_0: A2(
+												_rtfeldman$elm_css$Html_Styled$a,
+												{
 													ctor: '::',
-													_0: _rtfeldman$elm_css$Html_Styled$text(', '),
+													_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/authors/appzgear'),
 													_1: {
 														ctor: '::',
-														_0: A2(
-															_rtfeldman$elm_css$Html_Styled$a,
-															{
-																ctor: '::',
-																_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/authors/eleonor-wang'),
-																_1: {
-																	ctor: '::',
-																	_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Eleonor Wang'),
-																	_1: {ctor: '[]'}
-																}
-															},
-															{
-																ctor: '::',
-																_0: _rtfeldman$elm_css$Html_Styled$text('Eleonor Wang'),
-																_1: {ctor: '[]'}
-															}),
-														_1: {
+														_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Appzgear'),
+														_1: {ctor: '[]'}
+													}
+												},
+												{
+													ctor: '::',
+													_0: _rtfeldman$elm_css$Html_Styled$text('Appzgear'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: _rtfeldman$elm_css$Html_Styled$text(', '),
+												_1: {
+													ctor: '::',
+													_0: A2(
+														_rtfeldman$elm_css$Html_Styled$a,
+														{
 															ctor: '::',
-															_0: _rtfeldman$elm_css$Html_Styled$text(', '),
+															_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/authors/dave-gandy'),
 															_1: {
 																ctor: '::',
-																_0: A2(
-																	_rtfeldman$elm_css$Html_Styled$a,
-																	{
-																		ctor: '::',
-																		_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('http://www.freepik.com'),
-																		_1: {
-																			ctor: '::',
-																			_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Freepik'),
-																			_1: {ctor: '[]'}
-																		}
-																	},
-																	{
-																		ctor: '::',
-																		_0: _rtfeldman$elm_css$Html_Styled$text('Freepik'),
-																		_1: {ctor: '[]'}
-																	}),
-																_1: {
+																_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Dave Gandy'),
+																_1: {ctor: '[]'}
+															}
+														},
+														{
+															ctor: '::',
+															_0: _rtfeldman$elm_css$Html_Styled$text('Dave Gandy'),
+															_1: {ctor: '[]'}
+														}),
+													_1: {
+														ctor: '::',
+														_0: _rtfeldman$elm_css$Html_Styled$text(', '),
+														_1: {
+															ctor: '::',
+															_0: A2(
+																_rtfeldman$elm_css$Html_Styled$a,
+																{
 																	ctor: '::',
-																	_0: _rtfeldman$elm_css$Html_Styled$text(' and '),
+																	_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/authors/eleonor-wang'),
 																	_1: {
 																		ctor: '::',
-																		_0: A2(
-																			_rtfeldman$elm_css$Html_Styled$a,
-																			{
-																				ctor: '::',
-																				_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/authors/pixel-perfect'),
-																				_1: {
-																					ctor: '::',
-																					_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Pixel perfect'),
-																					_1: {ctor: '[]'}
-																				}
-																			},
-																			{
-																				ctor: '::',
-																				_0: _rtfeldman$elm_css$Html_Styled$text('Pixel perfect'),
-																				_1: {ctor: '[]'}
-																			}),
-																		_1: {
+																		_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Eleonor Wang'),
+																		_1: {ctor: '[]'}
+																	}
+																},
+																{
+																	ctor: '::',
+																	_0: _rtfeldman$elm_css$Html_Styled$text('Eleonor Wang'),
+																	_1: {ctor: '[]'}
+																}),
+															_1: {
+																ctor: '::',
+																_0: _rtfeldman$elm_css$Html_Styled$text(', '),
+																_1: {
+																	ctor: '::',
+																	_0: A2(
+																		_rtfeldman$elm_css$Html_Styled$a,
+																		{
 																			ctor: '::',
-																			_0: _rtfeldman$elm_css$Html_Styled$text(' from '),
+																			_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('http://www.freepik.com'),
 																			_1: {
 																				ctor: '::',
-																				_0: A2(
-																					_rtfeldman$elm_css$Html_Styled$a,
-																					{
-																						ctor: '::',
-																						_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/'),
-																						_1: {
-																							ctor: '::',
-																							_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Flaticon'),
-																							_1: {ctor: '[]'}
-																						}
-																					},
-																					{
-																						ctor: '::',
-																						_0: _rtfeldman$elm_css$Html_Styled$text('www.flaticon.com'),
-																						_1: {ctor: '[]'}
-																					}),
-																				_1: {
+																				_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Freepik'),
+																				_1: {ctor: '[]'}
+																			}
+																		},
+																		{
+																			ctor: '::',
+																			_0: _rtfeldman$elm_css$Html_Styled$text('Freepik'),
+																			_1: {ctor: '[]'}
+																		}),
+																	_1: {
+																		ctor: '::',
+																		_0: _rtfeldman$elm_css$Html_Styled$text(' and '),
+																		_1: {
+																			ctor: '::',
+																			_0: A2(
+																				_rtfeldman$elm_css$Html_Styled$a,
+																				{
 																					ctor: '::',
-																					_0: _rtfeldman$elm_css$Html_Styled$text(' and are licensed by '),
+																					_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/authors/pixel-perfect'),
 																					_1: {
 																						ctor: '::',
-																						_0: A2(
-																							_rtfeldman$elm_css$Html_Styled$a,
-																							{
+																						_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Pixel perfect'),
+																						_1: {ctor: '[]'}
+																					}
+																				},
+																				{
+																					ctor: '::',
+																					_0: _rtfeldman$elm_css$Html_Styled$text('Pixel perfect'),
+																					_1: {ctor: '[]'}
+																				}),
+																			_1: {
+																				ctor: '::',
+																				_0: _rtfeldman$elm_css$Html_Styled$text(' from '),
+																				_1: {
+																					ctor: '::',
+																					_0: A2(
+																						_rtfeldman$elm_css$Html_Styled$a,
+																						{
+																							ctor: '::',
+																							_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('https://www.flaticon.com/'),
+																							_1: {
 																								ctor: '::',
-																								_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('http://creativecommons.org/licenses/by/3.0/'),
-																								_1: {
+																								_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Flaticon'),
+																								_1: {ctor: '[]'}
+																							}
+																						},
+																						{
+																							ctor: '::',
+																							_0: _rtfeldman$elm_css$Html_Styled$text('www.flaticon.com'),
+																							_1: {ctor: '[]'}
+																						}),
+																					_1: {
+																						ctor: '::',
+																						_0: _rtfeldman$elm_css$Html_Styled$text(' and are licensed by '),
+																						_1: {
+																							ctor: '::',
+																							_0: A2(
+																								_rtfeldman$elm_css$Html_Styled$a,
+																								{
 																									ctor: '::',
-																									_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Creative Commons BY 3.0'),
+																									_0: _rtfeldman$elm_css$Html_Styled_Attributes$href('http://creativecommons.org/licenses/by/3.0/'),
 																									_1: {
 																										ctor: '::',
-																										_0: _rtfeldman$elm_css$Html_Styled_Attributes$target('_blank'),
-																										_1: {ctor: '[]'}
+																										_0: _rtfeldman$elm_css$Html_Styled_Attributes$title('Creative Commons BY 3.0'),
+																										_1: {
+																											ctor: '::',
+																											_0: _rtfeldman$elm_css$Html_Styled_Attributes$target('_blank'),
+																											_1: {ctor: '[]'}
+																										}
 																									}
-																								}
-																							},
-																							{
-																								ctor: '::',
-																								_0: _rtfeldman$elm_css$Html_Styled$text('CC 3.0 BY.'),
-																								_1: {ctor: '[]'}
-																							}),
-																						_1: {ctor: '[]'}
+																								},
+																								{
+																									ctor: '::',
+																									_0: _rtfeldman$elm_css$Html_Styled$text('CC 3.0 BY.'),
+																									_1: {ctor: '[]'}
+																								}),
+																							_1: {ctor: '[]'}
+																						}
 																					}
 																				}
 																			}
@@ -17736,9 +18250,9 @@ var _user$project$Main$view = function (model) {
 var _user$project$Main$main = _elm_lang$html$Html$programWithFlags(
 	{
 		init: _user$project$Main$init,
-		view: function (_p50) {
+		view: function (_p58) {
 			return _rtfeldman$elm_css$Html_Styled$toUnstyled(
-				_user$project$Main$view(_p50));
+				_user$project$Main$view(_p58));
 		},
 		update: _user$project$Main$update,
 		subscriptions: _user$project$Main$subscriptions

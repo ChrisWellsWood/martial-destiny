@@ -17395,7 +17395,7 @@ var _user$project$Main$view = function (model) {
 									{ctor: '[]'},
 									{
 										ctor: '::',
-										_0: _rtfeldman$elm_css$Html_Styled$text('A combat manager for Exalted 3rd Edition'),
+										_0: _rtfeldman$elm_css$Html_Styled$text('A combat tracker for Exalted 3rd Edition'),
 										_1: {ctor: '[]'}
 									}),
 								_1: {ctor: '[]'}

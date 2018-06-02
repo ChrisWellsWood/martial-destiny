@@ -611,7 +611,7 @@ view model =
             [ css [ headerStyle, rowFlexStyle ] ]
             [ div []
                 [ h1 [ css [ h1Style ] ] [ text "Threads of Martial Destiny" ]
-                , b [] [ text "A combat manager for Exalted 3rd Edition" ]
+                , b [] [ text "A combat tracker for Exalted 3rd Edition" ]
                 ]
             , div []
                 [ img
